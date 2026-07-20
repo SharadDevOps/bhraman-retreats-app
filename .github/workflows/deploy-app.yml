@@ -87,31 +87,34 @@ jobs:
           cp -r .next/static .next/standalone/.next/static
           [ -d public ] && cp -r public .next/standalone/public || true
           cp -r prisma .next/standalone/prisma
-          # Keep the SLIM traced standalone node_modules (fast to extract / boot),
-          # but copy in the few runtime deps Next's tracer misses under pnpm.
-          copy_pkg () {
-            pkg="$1"
-            src=""
-            if [ -f "node_modules/$pkg/package.json" ]; then
-              src="node_modules/$pkg"                                   # hoisted / direct
-            else
-              # pnpm .pnpm store, e.g. node_modules/.pnpm/styled-jsx@5.1.6/node_modules/styled-jsx
-              for c in node_modules/.pnpm/*/node_modules/"$pkg"; do
-                [ -f "$c/package.json" ] && src="$c" && break
-              done
-            fi
-            if [ -z "$src" ]; then
-              echo "ERROR: cannot find $pkg. .pnpm entries:"; ls node_modules/.pnpm 2>/dev/null | head -50; exit 1
-            fi
-            dest=".next/standalone/node_modules/$pkg"
-            rm -rf "$dest"; mkdir -p "$(dirname "$dest")"
-            cp -aL "$src" "$dest"
-            echo "bundled $pkg  <-  $src"
+          # Keep the SLIM traced standalone node_modules (fast to extract / boot).
+          # Next's tracer drops several of Next's OWN dependencies under pnpm
+          # (styled-jsx, @swc/helpers, @next/env, ...). Copy Next's entire
+          # dependency set in one shot: in pnpm they all sit together in Next's
+          # own .pnpm folder as (symlinked) siblings.
+          copy_dep () {
+            dep="$1"
+            [ -f "$dep/package.json" ] || return 0
+            name="$(node -e "process.stdout.write(require('$dep/package.json').name)" 2>/dev/null || true)"
+            [ -n "$name" ] || return 0
+            dest=".next/standalone/node_modules/$name"
+            [ -e "$dest" ] && return 0
+            mkdir -p "$(dirname "$dest")"
+            cp -aL "$dep" "$dest"
+            echo "bundled $name"
           }
-          copy_pkg styled-jsx
-          copy_pkg @swc/helpers
+          NEXT_NM="$(ls -d node_modules/.pnpm/next@*/node_modules 2>/dev/null | head -1 || true)"
+          if [ -z "$NEXT_NM" ]; then
+            echo "ERROR: cannot locate next in .pnpm store:"; ls node_modules/.pnpm 2>/dev/null | head -50; exit 1
+          fi
+          for d in "$NEXT_NM"/*; do
+            case "$(basename "$d")" in
+              @*) for s in "$d"/*; do copy_dep "$s"; done ;;
+              *)  copy_dep "$d" ;;
+            esac
+          done
           # Fail now (not at runtime) if anything critical is missing.
-          for m in next styled-jsx @swc/helpers react @prisma/client; do
+          for m in next styled-jsx @swc/helpers @next/env react @prisma/client; do
             if [ ! -f ".next/standalone/node_modules/$m/package.json" ]; then
               echo "ERROR: missing node_modules/$m in bundle"; exit 1
             fi
