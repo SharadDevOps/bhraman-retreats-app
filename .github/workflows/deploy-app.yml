@@ -98,7 +98,9 @@ jobs:
             name="$(node -e "process.stdout.write(require('$dep/package.json').name)" 2>/dev/null || true)"
             [ -n "$name" ] || return 0
             dest=".next/standalone/node_modules/$name"
-            [ -e "$dest" ] && return 0
+            # Always overwrite: Next's tracer may have left a PARTIAL copy (missing
+            # package.json), which is exactly what crashes require() at runtime.
+            rm -rf "$dest"
             mkdir -p "$(dirname "$dest")"
             cp -aL "$dep" "$dest"
             echo "bundled $name"
