@@ -84,32 +84,13 @@ jobs:
           cp -r .next/static .next/standalone/.next/static
           [ -d public ] && cp -r public .next/standalone/public || true
           cp -r prisma .next/standalone/prisma
-          # Next's tracer has a known blind spot for styled-jsx (loaded dynamically
-          # by next/dist/server/require-hook.js), which crashes the standalone
-          # server on App Service. Copy the real package in explicitly.
-          if [ -d node_modules/styled-jsx ]; then
-            SJSX=node_modules/styled-jsx
-          else
-            SJSX="$(find node_modules -type d -name styled-jsx -print -quit || true)"
-          fi
-          if [ -n "${SJSX:-}" ]; then
-            rm -rf .next/standalone/node_modules/styled-jsx
-            cp -rL "$SJSX" .next/standalone/node_modules/styled-jsx
-          fi
-          # Next's standalone build already traces @prisma/client + the query
-          # engine into the bundle. With pnpm the generated client lives in the
-          # .pnpm store (node_modules/.prisma may not exist), so copy the real
-          # generated client from wherever it is as extra insurance — non-fatal.
-          GEN_DIR="$(find node_modules -type d -path '*/.prisma/client' -print -quit || true)"
-          if [ -n "${GEN_DIR:-}" ]; then
-            mkdir -p .next/standalone/node_modules/.prisma
-            cp -rL "$GEN_DIR" .next/standalone/node_modules/.prisma/client
-          fi
-          PKG_DIR="$(find node_modules -type d -path '*/@prisma/client' -print -quit || true)"
-          if [ -n "${PKG_DIR:-}" ]; then
-            mkdir -p .next/standalone/node_modules/@prisma
-            cp -rL "$PKG_DIR" .next/standalone/node_modules/@prisma/client
-          fi
+          # Next's standalone tracer drops several of Next's own runtime deps under
+          # pnpm (styled-jsx, @swc/helpers, ...), which crashes the server on App
+          # Service. Rather than chase each one, prune to production dependencies
+          # and ship the COMPLETE node_modules (includes @prisma/client + engine).
+          pnpm prune --prod
+          rm -rf .next/standalone/node_modules
+          cp -rL node_modules .next/standalone/node_modules
 
       - name: Deploy to Azure Web App
         run: |
