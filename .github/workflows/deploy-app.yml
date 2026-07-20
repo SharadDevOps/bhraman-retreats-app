@@ -89,31 +89,28 @@ jobs:
           cp -r prisma .next/standalone/prisma
           # Keep the SLIM traced standalone node_modules (fast to extract / boot).
           # Next's tracer drops several of Next's OWN dependencies under pnpm
-          # (styled-jsx, @swc/helpers, @next/env, ...). Copy Next's entire
-          # dependency set in one shot: in pnpm they all sit together in Next's
-          # own .pnpm folder as (symlinked) siblings.
-          copy_dep () {
-            dep="$1"
-            [ -f "$dep/package.json" ] || return 0
-            name="$(node -e "process.stdout.write(require('$dep/package.json').name)" 2>/dev/null || true)"
-            [ -n "$name" ] || return 0
-            dest=".next/standalone/node_modules/$name"
-            # Always overwrite: Next's tracer may have left a PARTIAL copy (missing
-            # package.json), which is exactly what crashes require() at runtime.
+          # (styled-jsx, @swc/helpers, @next/env, ...) which crash the server.
+          # Search the WHOLE node_modules tree for each and copy a COMPLETE copy
+          # (overwriting any partial folder Next left). This does not depend on
+          # pnpm's layout, so it can't miss.
+          ensure_pkg () {
+            pkg="$1"
+            src=""
+            while IFS= read -r d; do
+              if [ -f "$d/package.json" ]; then src="$d"; break; fi
+            done < <(find node_modules -type d -path "*/$pkg" 2>/dev/null)
+            if [ -z "$src" ]; then
+              echo "ERROR: $pkg not found anywhere under node_modules"; exit 1
+            fi
+            dest=".next/standalone/node_modules/$pkg"
             rm -rf "$dest"
             mkdir -p "$(dirname "$dest")"
-            cp -aL "$dep" "$dest"
-            echo "bundled $name"
+            cp -aL "$src" "$dest"
+            echo "bundled $pkg  <-  $src"
           }
-          NEXT_NM="$(ls -d node_modules/.pnpm/next@*/node_modules 2>/dev/null | head -1 || true)"
-          if [ -z "$NEXT_NM" ]; then
-            echo "ERROR: cannot locate next in .pnpm store:"; ls node_modules/.pnpm 2>/dev/null | head -50; exit 1
-          fi
-          for d in "$NEXT_NM"/*; do
-            case "$(basename "$d")" in
-              @*) for s in "$d"/*; do copy_dep "$s"; done ;;
-              *)  copy_dep "$d" ;;
-            esac
+          # Next's runtime deps that its tracer commonly omits under pnpm.
+          for pkg in styled-jsx @swc/helpers @next/env caniuse-lite postcss; do
+            ensure_pkg "$pkg"
           done
           # Fail now (not at runtime) if anything critical is missing.
           for m in next styled-jsx @swc/helpers @next/env react @prisma/client; do
