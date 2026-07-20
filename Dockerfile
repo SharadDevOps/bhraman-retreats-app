@@ -12,9 +12,9 @@ COPY package.json pnpm-lock.yaml .npmrc* ./
 RUN pnpm install --frozen-lockfile --config.ignore-scripts=true
 
 COPY . .
+# Keep all deps (incl. typescript) so `next start` can load next.config.ts.
 RUN pnpm prisma generate \
- && pnpm build \
- && pnpm prune --prod
+ && pnpm build
 
 # ---- Runner: minimal image that runs the built app ----
 FROM node:22-bookworm-slim AS runner
