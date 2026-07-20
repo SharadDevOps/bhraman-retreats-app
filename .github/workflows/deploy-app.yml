@@ -90,7 +90,12 @@ jobs:
           # and ship the COMPLETE node_modules (includes @prisma/client + engine).
           pnpm prune --prod
           rm -rf .next/standalone/node_modules
-          cp -rL node_modules .next/standalone/node_modules
+          cp -a node_modules .next/standalone/node_modules
+          # Fail the build now (not at runtime) if a critical runtime dep is absent.
+          for m in next/package.json styled-jsx/package.json @swc/helpers/package.json react/package.json @prisma/client/package.json; do
+            test -f ".next/standalone/node_modules/$m" || { echo "ERROR: missing node_modules/$m in bundle"; exit 1; }
+          done
+          echo "Bundle node_modules verified."
 
       - name: Deploy to Azure Web App
         run: |
