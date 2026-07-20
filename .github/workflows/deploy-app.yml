@@ -89,13 +89,21 @@ jobs:
           cp -r prisma .next/standalone/prisma
           # Keep the SLIM traced standalone node_modules (fast to extract / boot),
           # but copy in the few runtime deps Next's tracer misses under pnpm.
-          # Found by path so it works with any pnpm layout (hoisted or .pnpm store).
           copy_pkg () {
-            local pkg="$1"
-            local src
-            src="$(find node_modules -type d -path "*/$pkg" -exec test -f '{}/package.json' ';' -print 2>/dev/null | head -1)"
-            if [ -z "$src" ]; then echo "ERROR: cannot find $pkg under node_modules"; exit 1; fi
-            local dest=".next/standalone/node_modules/$pkg"
+            pkg="$1"
+            src=""
+            if [ -f "node_modules/$pkg/package.json" ]; then
+              src="node_modules/$pkg"                                   # hoisted / direct
+            else
+              # pnpm .pnpm store, e.g. node_modules/.pnpm/styled-jsx@5.1.6/node_modules/styled-jsx
+              for c in node_modules/.pnpm/*/node_modules/"$pkg"; do
+                [ -f "$c/package.json" ] && src="$c" && break
+              done
+            fi
+            if [ -z "$src" ]; then
+              echo "ERROR: cannot find $pkg. .pnpm entries:"; ls node_modules/.pnpm 2>/dev/null | head -50; exit 1
+            fi
+            dest=".next/standalone/node_modules/$pkg"
             rm -rf "$dest"; mkdir -p "$(dirname "$dest")"
             cp -aL "$src" "$dest"
             echo "bundled $pkg  <-  $src"
@@ -104,7 +112,9 @@ jobs:
           copy_pkg @swc/helpers
           # Fail now (not at runtime) if anything critical is missing.
           for m in next styled-jsx @swc/helpers react @prisma/client; do
-            test -f ".next/standalone/node_modules/$m/package.json" || { echo "ERROR: missing node_modules/$m in bundle"; exit 1; }
+            if [ ! -f ".next/standalone/node_modules/$m/package.json" ]; then
+              echo "ERROR: missing node_modules/$m in bundle"; exit 1
+            fi
           done
           echo "Bundle node_modules verified."
 
