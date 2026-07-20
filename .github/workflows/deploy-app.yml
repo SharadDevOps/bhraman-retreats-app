@@ -1,0 +1,93 @@
+name: Deploy Web App
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "dev"
+        type: choice
+        options: [dev, prod]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency: deploy-${{ inputs.environment || 'dev' }}
+
+env:
+  ENVIRONMENT: ${{ inputs.environment || 'dev' }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || 'dev' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma generate
+
+      - name: Build
+        run: pnpm build
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.ARM_CLIENT_ID }}
+          tenant-id: ${{ secrets.ARM_TENANT_ID }}
+          subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+      - name: Apply database migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          RG="rg-bhr-ret-${ENVIRONMENT}-cin"
+          SERVER="psql-bhr-ret-${ENVIRONMENT}-cin"
+          RUNNER_IP="$(curl -s https://api.ipify.org)"
+          echo "Opening temporary firewall for runner IP $RUNNER_IP"
+          az postgres flexible-server firewall-rule create \
+            --resource-group "$RG" --name "$SERVER" \
+            --rule-name "gh-deploy-temp" \
+            --start-ip-address "$RUNNER_IP" --end-ip-address "$RUNNER_IP" >/dev/null
+          # Ensure the rule is removed even if migration fails
+          trap 'az postgres flexible-server firewall-rule delete --resource-group "$RG" --name "$SERVER" --rule-name "gh-deploy-temp" --yes >/dev/null 2>&1 || true' EXIT
+          pnpm prisma migrate deploy
+
+      - name: Assemble standalone bundle
+        run: |
+          cp -r .next/static .next/standalone/.next/static
+          [ -d public ] && cp -r public .next/standalone/public || true
+          cp -r prisma .next/standalone/prisma
+          # Ensure the generated Prisma client + query engine are bundled
+          mkdir -p .next/standalone/node_modules/.prisma
+          cp -r node_modules/.prisma/client .next/standalone/node_modules/.prisma/client
+          mkdir -p .next/standalone/node_modules/@prisma
+          cp -r node_modules/@prisma/client .next/standalone/node_modules/@prisma/client
+
+      - name: Deploy to Azure Web App
+        run: |
+          APP="app-bhr-ret-${ENVIRONMENT}-cin"
+          cd .next/standalone
+          zip -r ../../app.zip . >/dev/null
+          cd ../..
+          az webapp deploy \
+            --resource-group "rg-bhr-ret-${ENVIRONMENT}-cin" \
+            --name "$APP" \
+            --src-path app.zip --type zip
