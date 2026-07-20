@@ -87,16 +87,24 @@ jobs:
           cp -r .next/static .next/standalone/.next/static
           [ -d public ] && cp -r public .next/standalone/public || true
           cp -r prisma .next/standalone/prisma
-          # Next's standalone tracer drops several of Next's own runtime deps under
-          # pnpm (styled-jsx, @swc/helpers, ...), which crashes the server on App
-          # Service. Rather than chase each one, prune to production dependencies
-          # and ship the COMPLETE node_modules (includes @prisma/client + engine).
-          pnpm prune --prod --config.node-linker=hoisted
-          rm -rf .next/standalone/node_modules
-          cp -a node_modules .next/standalone/node_modules
-          # Fail the build now (not at runtime) if a critical runtime dep is absent.
-          for m in next/package.json styled-jsx/package.json @swc/helpers/package.json react/package.json @prisma/client/package.json; do
-            test -f ".next/standalone/node_modules/$m" || { echo "ERROR: missing node_modules/$m in bundle"; exit 1; }
+          # Keep the SLIM traced standalone node_modules (fast to extract / boot),
+          # but copy in the few runtime deps Next's tracer misses under pnpm.
+          # Found by path so it works with any pnpm layout (hoisted or .pnpm store).
+          copy_pkg () {
+            local pkg="$1"
+            local src
+            src="$(find node_modules -type d -path "*/$pkg" -exec test -f '{}/package.json' ';' -print 2>/dev/null | head -1)"
+            if [ -z "$src" ]; then echo "ERROR: cannot find $pkg under node_modules"; exit 1; fi
+            local dest=".next/standalone/node_modules/$pkg"
+            rm -rf "$dest"; mkdir -p "$(dirname "$dest")"
+            cp -aL "$src" "$dest"
+            echo "bundled $pkg  <-  $src"
+          }
+          copy_pkg styled-jsx
+          copy_pkg @swc/helpers
+          # Fail now (not at runtime) if anything critical is missing.
+          for m in next styled-jsx @swc/helpers react @prisma/client; do
+            test -f ".next/standalone/node_modules/$m/package.json" || { echo "ERROR: missing node_modules/$m in bundle"; exit 1; }
           done
           echo "Bundle node_modules verified."
 
