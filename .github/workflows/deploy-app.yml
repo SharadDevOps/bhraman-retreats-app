@@ -101,11 +101,17 @@ jobs:
 
       - name: Deploy to Azure Web App
         run: |
+          set -euo pipefail
           APP="app-bhr-ret-${ENVIRONMENT}-cin"
+          RG="rg-bhr-ret-${ENVIRONMENT}-cin"
+          # Next standalone reads HOSTNAME from the env; App Service sets it to the
+          # container name, so the server must be told to bind 0.0.0.0 explicitly.
+          az webapp config set --resource-group "$RG" --name "$APP" \
+            --startup-file "HOSTNAME=0.0.0.0 node server.js" >/dev/null
           cd .next/standalone
           zip -r ../../app.zip . >/dev/null
           cd ../..
           az webapp deploy \
-            --resource-group "rg-bhr-ret-${ENVIRONMENT}-cin" \
+            --resource-group "$RG" \
             --name "$APP" \
             --src-path app.zip --type zip
