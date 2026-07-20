@@ -73,5 +73,8 @@ jobs:
           az webapp config container set --name "$APP" --resource-group "$RG" \
             --docker-custom-image-name "$IMAGE" \
             --docker-registry-server-url "https://${ACR_NAME}.azurecr.io"
+          # Clear any leftover startup command; for a container it overrides the
+          # image CMD and would run the wrong process.
+          az webapp config set --name "$APP" --resource-group "$RG" --startup-file "" >/dev/null
           az webapp restart --name "$APP" --resource-group "$RG"
           echo "Deployed $IMAGE  ->  https://$APP.azurewebsites.net"
