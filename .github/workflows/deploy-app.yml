@@ -108,6 +108,11 @@ jobs:
           # container name, so the server must be told to bind 0.0.0.0 explicitly.
           az webapp config set --resource-group "$RG" --name "$APP" \
             --startup-file "HOSTNAME=0.0.0.0 node server.js" >/dev/null
+          # Run-from-package mounts the zip as-is (node_modules intact) and skips
+          # the Node "Express Deploy" optimizer that tarballs node_modules and
+          # breaks a custom startup command.
+          az webapp config appsettings set --resource-group "$RG" --name "$APP" \
+            --settings WEBSITE_RUN_FROM_PACKAGE=1 >/dev/null
           cd .next/standalone
           zip -r ../../app.zip . >/dev/null
           cd ../..
