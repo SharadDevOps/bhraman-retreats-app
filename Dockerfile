@@ -7,7 +7,9 @@ RUN corepack enable && corepack prepare pnpm@11.15.0 --activate
 ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY package.json pnpm-lock.yaml .npmrc* ./
-RUN pnpm install --frozen-lockfile
+# ignore-scripts avoids pnpm's interactive "approve-builds" gate in CI; we run
+# `prisma generate` explicitly below, and no other package needs a build step.
+RUN pnpm install --frozen-lockfile --config.ignore-scripts=true
 
 COPY . .
 RUN pnpm prisma generate \
