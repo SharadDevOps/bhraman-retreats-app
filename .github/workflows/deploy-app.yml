@@ -20,6 +20,7 @@ concurrency: deploy-${{ inputs.environment || 'dev' }}
 
 env:
   ENVIRONMENT: ${{ inputs.environment || 'dev' }}
+  ACR_NAME: acrbhrretcin
 
 jobs:
   build-and-deploy:
@@ -28,34 +29,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Set Node 22 BEFORE installing pnpm (pnpm 11 needs Node >= 22.13). This is
-      # the build runtime only; the app still runs on Node 20 on App Service.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11
-
-      - name: Install dependencies
-        # --config.node-linker=hoisted forces a flat node_modules (like npm) so
-        # Next's runtime deps (styled-jsx, @swc/helpers) sit at the top level and
-        # end up in the standalone bundle. Independent of .npmrc.
-        run: pnpm install --frozen-lockfile --config.node-linker=hoisted
-
-      - name: Generate Prisma client
-        run: pnpm prisma generate
-
-      - name: Build
-        run: pnpm build
-
       - name: Azure login (OIDC)
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.ARM_CLIENT_ID }}
           tenant-id: ${{ secrets.ARM_TENANT_ID }}
           subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image
+        run: |
+          set -euo pipefail
+          IMAGE="${ACR_NAME}.azurecr.io/bhraman-retreats:${GITHUB_SHA}"
+          az acr login --name "$ACR_NAME"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
 
       - name: Apply database migrations
         env:
@@ -65,11 +53,7 @@ jobs:
           RG="rg-bhr-ret-${ENVIRONMENT}-cin"
           SERVER="psql-bhr-ret-${ENVIRONMENT}-cin"
           RULE="gh-deploy-temp"
-          RUNNER_IP="$(curl -s https://api.ipify.org)"
-          echo "Opening temporary firewall for runner IP $RUNNER_IP"
-          # az CLI renamed these args in the 2026 breaking change: new CLI uses
-          # --server-name (server) + --name (rule); older CLI uses --name (server)
-          # + --rule-name (rule). Try new syntax, fall back to old.
+          IP="$(curl -s https://api.ipify.org)"
           fw() {
             local action="$1"; shift
             az postgres flexible-server firewall-rule "$action" \
@@ -77,65 +61,17 @@ jobs:
             || az postgres flexible-server firewall-rule "$action" \
               --resource-group "$RG" --name "$SERVER" --rule-name "$RULE" "$@"
           }
-          fw create --start-ip-address "$RUNNER_IP" --end-ip-address "$RUNNER_IP" >/dev/null
+          fw create --start-ip-address "$IP" --end-ip-address "$IP" >/dev/null
           trap 'fw delete --yes >/dev/null 2>&1 || true' EXIT
-          pnpm prisma migrate deploy
+          npx --yes prisma@6.19.3 migrate deploy
 
-      - name: Assemble standalone bundle
+      - name: Point web app at the new image
         run: |
           set -euo pipefail
-          cp -r .next/static .next/standalone/.next/static
-          [ -d public ] && cp -r public .next/standalone/public || true
-          cp -r prisma .next/standalone/prisma
-          # Keep the SLIM traced standalone node_modules (fast to extract / boot).
-          # Next's tracer drops several of Next's OWN dependencies under pnpm
-          # (styled-jsx, @swc/helpers, @next/env, ...) which crash the server.
-          # Search the WHOLE node_modules tree for each and copy a COMPLETE copy
-          # (overwriting any partial folder Next left). This does not depend on
-          # pnpm's layout, so it can't miss.
-          ensure_pkg () {
-            pkg="$1"
-            src=""
-            while IFS= read -r d; do
-              if [ -f "$d/package.json" ]; then src="$d"; break; fi
-            done < <(find node_modules -type d -path "*/$pkg" 2>/dev/null)
-            if [ -z "$src" ]; then
-              echo "ERROR: $pkg not found anywhere under node_modules"; exit 1
-            fi
-            dest=".next/standalone/node_modules/$pkg"
-            rm -rf "$dest"
-            mkdir -p "$(dirname "$dest")"
-            cp -aL "$src" "$dest"
-            echo "bundled $pkg  <-  $src"
-          }
-          # Next's runtime deps that its tracer commonly omits under pnpm.
-          for pkg in styled-jsx @swc/helpers @next/env caniuse-lite postcss; do
-            ensure_pkg "$pkg"
-          done
-          # Fail now (not at runtime) if anything critical is missing.
-          for m in next styled-jsx @swc/helpers @next/env react @prisma/client; do
-            if [ ! -f ".next/standalone/node_modules/$m/package.json" ]; then
-              echo "ERROR: missing node_modules/$m in bundle"; exit 1
-            fi
-          done
-          echo "Bundle node_modules verified."
-
-      - name: Deploy to Azure Web App
-        run: |
-          set -euo pipefail
-          APP="app-bhr-ret-${ENVIRONMENT}-cin"
           RG="rg-bhr-ret-${ENVIRONMENT}-cin"
-          # Next standalone reads HOSTNAME from the env; App Service sets it to the
-          # container name, so the server must be told to bind 0.0.0.0 explicitly.
-          az webapp config set --resource-group "$RG" --name "$APP" \
-            --startup-file "HOSTNAME=0.0.0.0 node server.js" >/dev/null
-          # Clear any leftover run-from-package setting from earlier attempts.
-          az webapp config appsettings delete --resource-group "$RG" --name "$APP" \
-            --setting-names WEBSITE_RUN_FROM_PACKAGE >/dev/null 2>&1 || true
-          cd .next/standalone
-          zip -r ../../app.zip . >/dev/null
-          cd ../..
-          az webapp deploy \
-            --resource-group "$RG" \
-            --name "$APP" \
-            --src-path app.zip --type zip
+          APP="app-bhr-ret-${ENVIRONMENT}-cin"
+          az webapp config container set --name "$APP" --resource-group "$RG" \
+            --docker-custom-image-name "$IMAGE" \
+            --docker-registry-server-url "https://${ACR_NAME}.azurecr.io"
+          az webapp restart --name "$APP" --resource-group "$RG"
+          echo "Deployed $IMAGE  ->  https://$APP.azurewebsites.net"
