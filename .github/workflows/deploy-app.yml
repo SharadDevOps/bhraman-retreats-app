@@ -39,7 +39,10 @@ jobs:
           version: 11
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        # --config.node-linker=hoisted forces a flat node_modules (like npm) so
+        # Next's runtime deps (styled-jsx, @swc/helpers) sit at the top level and
+        # end up in the standalone bundle. Independent of .npmrc.
+        run: pnpm install --frozen-lockfile --config.node-linker=hoisted
 
       - name: Generate Prisma client
         run: pnpm prisma generate
@@ -88,7 +91,7 @@ jobs:
           # pnpm (styled-jsx, @swc/helpers, ...), which crashes the server on App
           # Service. Rather than chase each one, prune to production dependencies
           # and ship the COMPLETE node_modules (includes @prisma/client + engine).
-          pnpm prune --prod
+          pnpm prune --prod --config.node-linker=hoisted
           rm -rf .next/standalone/node_modules
           cp -a node_modules .next/standalone/node_modules
           # Fail the build now (not at runtime) if a critical runtime dep is absent.
