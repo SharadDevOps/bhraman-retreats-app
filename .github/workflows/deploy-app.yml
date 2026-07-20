@@ -61,14 +61,21 @@ jobs:
           set -euo pipefail
           RG="rg-bhr-ret-${ENVIRONMENT}-cin"
           SERVER="psql-bhr-ret-${ENVIRONMENT}-cin"
+          RULE="gh-deploy-temp"
           RUNNER_IP="$(curl -s https://api.ipify.org)"
           echo "Opening temporary firewall for runner IP $RUNNER_IP"
-          az postgres flexible-server firewall-rule create \
-            --resource-group "$RG" --name "$SERVER" \
-            --rule-name "gh-deploy-temp" \
-            --start-ip-address "$RUNNER_IP" --end-ip-address "$RUNNER_IP" >/dev/null
-          # Ensure the rule is removed even if migration fails
-          trap 'az postgres flexible-server firewall-rule delete --resource-group "$RG" --name "$SERVER" --rule-name "gh-deploy-temp" --yes >/dev/null 2>&1 || true' EXIT
+          # az CLI renamed these args in the 2026 breaking change: new CLI uses
+          # --server-name (server) + --name (rule); older CLI uses --name (server)
+          # + --rule-name (rule). Try new syntax, fall back to old.
+          fw() {
+            local action="$1"; shift
+            az postgres flexible-server firewall-rule "$action" \
+              --resource-group "$RG" --server-name "$SERVER" --name "$RULE" "$@" 2>/dev/null \
+            || az postgres flexible-server firewall-rule "$action" \
+              --resource-group "$RG" --name "$SERVER" --rule-name "$RULE" "$@"
+          }
+          fw create --start-ip-address "$RUNNER_IP" --end-ip-address "$RUNNER_IP" >/dev/null
+          trap 'fw delete --yes >/dev/null 2>&1 || true' EXIT
           pnpm prisma migrate deploy
 
       - name: Assemble standalone bundle
