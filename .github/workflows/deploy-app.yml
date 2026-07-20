@@ -39,11 +39,13 @@ jobs:
       - name: Build and push container image
         run: |
           set -euo pipefail
-          IMAGE="${ACR_NAME}.azurecr.io/bhraman-retreats:${GITHUB_SHA}"
+          REPO="${ACR_NAME}.azurecr.io/bhraman-retreats"
           az acr login --name "$ACR_NAME"
-          docker build -t "$IMAGE" .
-          docker push "$IMAGE"
-          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          # Terraform pins the app to :latest, so push both a traceable SHA tag
+          # and :latest, then restart to pull the new :latest.
+          docker build -t "$REPO:${GITHUB_SHA}" -t "$REPO:latest" .
+          docker push "$REPO:${GITHUB_SHA}"
+          docker push "$REPO:latest"
 
       - name: Apply database migrations
         env:
@@ -65,16 +67,12 @@ jobs:
           trap 'fw delete --yes >/dev/null 2>&1 || true' EXIT
           npx --yes prisma@6.19.3 migrate deploy
 
-      - name: Point web app at the new image
+      - name: Restart web app to pull the new image
         run: |
           set -euo pipefail
           RG="rg-bhr-ret-${ENVIRONMENT}-cin"
           APP="app-bhr-ret-${ENVIRONMENT}-cin"
-          az webapp config container set --name "$APP" --resource-group "$RG" \
-            --docker-custom-image-name "$IMAGE" \
-            --docker-registry-server-url "https://${ACR_NAME}.azurecr.io"
-          # Clear any leftover startup command; for a container it overrides the
-          # image CMD and would run the wrong process.
-          az webapp config set --name "$APP" --resource-group "$RG" --startup-file "" >/dev/null
+          # Image reference + registry + settings are managed by Terraform; just
+          # restart so App Service re-pulls :latest.
           az webapp restart --name "$APP" --resource-group "$RG"
-          echo "Deployed $IMAGE  ->  https://$APP.azurewebsites.net"
+          echo "Deployed ${ACR_NAME}.azurecr.io/bhraman-retreats:latest  ->  https://$APP.azurewebsites.net"
