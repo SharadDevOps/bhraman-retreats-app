@@ -84,6 +84,18 @@ jobs:
           cp -r .next/static .next/standalone/.next/static
           [ -d public ] && cp -r public .next/standalone/public || true
           cp -r prisma .next/standalone/prisma
+          # Next's tracer has a known blind spot for styled-jsx (loaded dynamically
+          # by next/dist/server/require-hook.js), which crashes the standalone
+          # server on App Service. Copy the real package in explicitly.
+          if [ -d node_modules/styled-jsx ]; then
+            SJSX=node_modules/styled-jsx
+          else
+            SJSX="$(find node_modules -type d -name styled-jsx -print -quit || true)"
+          fi
+          if [ -n "${SJSX:-}" ]; then
+            rm -rf .next/standalone/node_modules/styled-jsx
+            cp -rL "$SJSX" .next/standalone/node_modules/styled-jsx
+          fi
           # Next's standalone build already traces @prisma/client + the query
           # engine into the bundle. With pnpm the generated client lives in the
           # .pnpm store (node_modules/.prisma may not exist), so copy the real
