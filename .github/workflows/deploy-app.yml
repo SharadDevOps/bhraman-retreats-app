@@ -80,14 +80,24 @@ jobs:
 
       - name: Assemble standalone bundle
         run: |
+          set -euo pipefail
           cp -r .next/static .next/standalone/.next/static
           [ -d public ] && cp -r public .next/standalone/public || true
           cp -r prisma .next/standalone/prisma
-          # Ensure the generated Prisma client + query engine are bundled
-          mkdir -p .next/standalone/node_modules/.prisma
-          cp -r node_modules/.prisma/client .next/standalone/node_modules/.prisma/client
-          mkdir -p .next/standalone/node_modules/@prisma
-          cp -r node_modules/@prisma/client .next/standalone/node_modules/@prisma/client
+          # Next's standalone build already traces @prisma/client + the query
+          # engine into the bundle. With pnpm the generated client lives in the
+          # .pnpm store (node_modules/.prisma may not exist), so copy the real
+          # generated client from wherever it is as extra insurance — non-fatal.
+          GEN_DIR="$(find node_modules -type d -path '*/.prisma/client' -print -quit || true)"
+          if [ -n "${GEN_DIR:-}" ]; then
+            mkdir -p .next/standalone/node_modules/.prisma
+            cp -rL "$GEN_DIR" .next/standalone/node_modules/.prisma/client
+          fi
+          PKG_DIR="$(find node_modules -type d -path '*/@prisma/client' -print -quit || true)"
+          if [ -n "${PKG_DIR:-}" ]; then
+            mkdir -p .next/standalone/node_modules/@prisma
+            cp -rL "$PKG_DIR" .next/standalone/node_modules/@prisma/client
+          fi
 
       - name: Deploy to Azure Web App
         run: |
