@@ -1,8 +1,8 @@
-import { ArrowDown, ArrowRight, CalendarDays, MapPin, Sparkles } from "lucide-react";
-import { Navigation } from "@/components/navigation";
+import { ArrowRight, CalendarDays, MapPin, Sparkles } from "lucide-react";
 import { BookingForm } from "@/components/booking-form";
+import { CinematicHero } from "@/components/cinematic-hero";
 import { ScrollReveal } from "@/components/scroll-reveal";
-import { Fireflies, HeroNature } from "@/components/nature-effects";
+import { Fireflies } from "@/components/nature-effects";
 import { Itinerary } from "@/components/itinerary";
 import { elements } from "@/data/retreat";
 import { formatDateRange, getSiteData } from "@/lib/content";
@@ -16,17 +16,7 @@ export default async function Home() {
   const price = `₹${(retreat.priceInPaise / 100).toLocaleString("en-IN")}`;
   return <main id="top">
     <ScrollReveal />
-    <section className="hero">
-      <Navigation /><div className="orbit orbit-one" /><div className="orbit orbit-two" /><HeroNature />
-      <div className="hero-content">
-        <p className="eyebrow light">Elemental retreats · Himalayas, India</p>
-        <h1>Remember your<br /><em>natural rhythm.</em></h1>
-        <p className="hero-copy">Five elements. Five days. One quiet return to the part of you that never forgot how to be whole.</p>
-        <div className="hero-actions"><a className="button button-light" href="#retreat">Explore the retreat <ArrowRight size={18} /></a><a className="text-link light" href="#philosophy">Discover our philosophy</a></div>
-      </div>
-      <div className="element-wheel" aria-hidden="true"><span className="wheel-center">ॐ</span><span className="wheel-label earth-label">Earth</span><span className="wheel-label water-label">Water</span><span className="wheel-label fire-label">Fire</span><span className="wheel-label air-label">Air</span><span className="wheel-label space-label">Space</span></div>
-      <a href="#philosophy" className="scroll-cue"><ArrowDown size={17} /> Scroll to journey</a>
-    </section>
+    <CinematicHero />
 
     <section className="manifesto section" id="philosophy">
       <div><p className="eyebrow">The Bhraman way</p><span className="botanical" aria-hidden="true">❦</span></div>
