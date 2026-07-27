@@ -10,7 +10,7 @@ export function Itinerary() {
     <div className="itinerary-shell">
       <div className="day-tabs" role="tablist" aria-label="Retreat days">
         {itinerary.map((entry, index) => (
-          <button key={entry.day} className={active === index ? "active" : ""} onClick={() => setActive(index)} role="tab">
+          <button key={entry.day} className={active === index ? "active" : ""} onClick={() => setActive(index)} role="tab" aria-selected={active === index}>
             <span>0{index + 1}</span>{entry.element}
           </button>
         ))}
