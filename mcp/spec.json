@@ -1,0 +1,58 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Bhraman Retreats API",
+    "description": "Public API for the Bhraman Retreats website. Exposes retreat booking. Read/admin tools require the API-key-protected endpoints (to be added).",
+    "version": "1.0.0"
+  },
+  "servers": [
+    { "url": "https://app-bhr-ret-dev-cin.azurewebsites.net" }
+  ],
+  "paths": {
+    "/api/bookings": {
+      "post": {
+        "operationId": "createBooking",
+        "summary": "Create a retreat booking",
+        "description": "Reserves a spot on the upcoming retreat for one or more guests. Returns a booking reference; payment is handled separately.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "phone", "guests"],
+                "properties": {
+                  "name": { "type": "string", "description": "Full name of the lead guest." },
+                  "email": { "type": "string", "format": "email" },
+                  "phone": { "type": "string", "description": "Contact phone, e.g. +91 98765 43210." },
+                  "guests": { "type": "integer", "minimum": 1, "maximum": 6 },
+                  "dietaryNotes": { "type": "string", "description": "Optional dietary preferences." },
+                  "healthNotes": { "type": "string", "description": "Optional health notes." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Booking created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reference": { "type": "string", "example": "BR-7KQ2NC" },
+                    "status": { "type": "string", "enum": ["PENDING", "WAITLISTED"] },
+                    "guests": { "type": "integer" },
+                    "totalInPaise": { "type": "integer", "description": "Total price in paise (₹1 = 100 paise)." }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation error." }
+        }
+      }
+    }
+  }
+}
