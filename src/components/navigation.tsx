@@ -2,13 +2,14 @@
 
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { BrandLogo } from "@/components/brand-logo";
 
 export function Navigation() {
   const [open, setOpen] = useState(false);
   return (
     <header className="nav-wrap">
       <a className="brand" href="#top" aria-label="Bhraman Retreats home">
-        <span className="brand-mark">भ</span><span>Bhraman <i>Retreats</i></span>
+        <BrandLogo tone="light" />
       </a>
       <nav className={open ? "nav-links open" : "nav-links"} aria-label="Main navigation">
         <a href="#philosophy" onClick={() => setOpen(false)}>Our story</a>
@@ -16,7 +17,7 @@ export function Navigation() {
         <a href="#retreat" onClick={() => setOpen(false)}>Upcoming retreat</a>
         <a href="#itinerary" onClick={() => setOpen(false)}>Itinerary</a>
       </nav>
-      <button className="menu-button" onClick={() => setOpen(!open)} aria-label="Toggle menu">{open ? <X /> : <Menu />}</button>
+      <button className="menu-button" onClick={() => setOpen(!open)} aria-label="Toggle menu" aria-expanded={open}>{open ? <X /> : <Menu />}</button>
     </header>
   );
 }

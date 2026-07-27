@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { upcomingRetreat } from "@/data/retreat";
+import { getFeaturedRetreatDefinition } from "@/data/retreat";
 
 function makeReference() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -30,21 +30,22 @@ export async function POST(request: Request) {
   if (!Number.isInteger(guestCount) || guestCount < 1 || guestCount > 6) return NextResponse.json({ error: "Guests must be between 1 and 6." }, { status: 400 });
 
   try {
-    // Ensure the retreat exists (seeded from site data on first booking)
+    const featuredRetreat = getFeaturedRetreatDefinition();
+    // Ensure the date-selected featured retreat exists.
     const retreat = await prisma.retreat.upsert({
-      where: { slug: upcomingRetreat.slug },
+      where: { slug: featuredRetreat.slug },
       update: {},
       create: {
-        slug: upcomingRetreat.slug,
-        title: upcomingRetreat.title,
-        edition: upcomingRetreat.edition,
-        summary: upcomingRetreat.summary,
-        description: upcomingRetreat.description,
-        location: upcomingRetreat.location,
-        startDate: new Date(upcomingRetreat.startDate),
-        endDate: new Date(upcomingRetreat.endDate),
-        priceInPaise: upcomingRetreat.priceInPaise,
-        capacity: upcomingRetreat.capacity,
+        slug: featuredRetreat.slug,
+        title: featuredRetreat.title,
+        edition: featuredRetreat.edition,
+        summary: featuredRetreat.summary,
+        description: featuredRetreat.description,
+        location: featuredRetreat.location,
+        startDate: new Date(featuredRetreat.startDate),
+        endDate: new Date(featuredRetreat.endDate),
+        priceInPaise: featuredRetreat.priceInPaise,
+        capacity: featuredRetreat.capacity,
         status: "PUBLISHED",
       },
     });

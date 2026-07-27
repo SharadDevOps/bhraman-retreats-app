@@ -18,13 +18,13 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       type: "website",
-      images: [{ url: new URL("/og.png", baseUrl).toString(), width: 1731, height: 909, alt: "Bhraman Retreats in the Himalayas" }],
+      images: [{ url: new URL("/og-phase1.png", baseUrl).toString(), width: 1731, height: 909, alt: "A quiet Himalayan monastery at dawn for Bhraman Retreats" }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [new URL("/og.png", baseUrl).toString()],
+      images: [new URL("/og-phase1.png", baseUrl).toString()],
     },
   };
 }

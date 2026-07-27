@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowDown, ArrowRight, Volume2, VolumeX } from "lucide-react";
+import { ArrowDown, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Navigation } from "@/components/navigation";
+import { EditorialHeading, PrimaryButton, SecondaryButton, SectionLabel } from "@/components/design-system";
 
 type Particle = {
   x: number;
@@ -288,12 +289,12 @@ export function CinematicHero() {
       <Navigation />
 
       <div className="hero-content">
-        <p className="eyebrow light">Elemental retreats · Himalayas, India</p>
-        <h1>Remember your<br /><em>natural rhythm.</em></h1>
+        <SectionLabel className="light">Elemental retreats · Himalayas, India</SectionLabel>
+        <EditorialHeading as="h1">Remember your<br /><em>natural rhythm.</em></EditorialHeading>
         <p className="hero-copy">Five elements. Five days. One quiet return to the part of you that never forgot how to be whole.</p>
         <div className="hero-actions">
-          <a className="button button-light" href="#retreat">Explore the retreat <ArrowRight size={18} /></a>
-          <a className="text-link light" href="#philosophy">Discover our philosophy</a>
+          <PrimaryButton href="#retreat" onDark>Explore the retreat</PrimaryButton>
+          <SecondaryButton href="#philosophy" onDark>Discover our philosophy</SecondaryButton>
         </div>
       </div>
 
