@@ -4,6 +4,7 @@ import { ArrowDown, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Navigation } from "@/components/navigation";
 import { EditorialHeading, PrimaryButton, SecondaryButton, SectionLabel } from "@/components/design-system";
+import type { HomeContent } from "@/lib/content";
 
 type Particle = {
   x: number;
@@ -29,7 +30,13 @@ const easeInOut = (value: number) => value < 0.5
   ? 4 * value * value * value
   : 1 - Math.pow(-2 * value + 2, 3) / 2;
 
-export function CinematicHero() {
+export function CinematicHero({
+  founderName = "Dr. Pratiksha Shekhawat",
+  content,
+}: {
+  founderName?: string;
+  content: HomeContent;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const skipRef = useRef(false);
@@ -279,22 +286,22 @@ export function CinematicHero() {
       <canvas ref={canvasRef} className="om-particles" aria-hidden="true" />
       <div className="intro-wordmark" aria-hidden="true">
         <span>ॐ</span>
-        <small>Breathe in · Return within</small>
+        <small>{content.introTagline}</small>
       </div>
       <div className="intro-founder">
         <span>Founded & guided by</span>
-        <strong>Dr. Pratiksha Shekhawat</strong>
+        <strong>{founderName}</strong>
       </div>
 
       <Navigation />
 
       <div className="hero-content">
-        <SectionLabel className="light">Elemental retreats · Himalayas, India</SectionLabel>
-        <EditorialHeading as="h1">Remember your<br /><em>natural rhythm.</em></EditorialHeading>
-        <p className="hero-copy">Five elements. Five days. One quiet return to the part of you that never forgot how to be whole.</p>
+        <SectionLabel className="light">{content.heroEyebrow}</SectionLabel>
+        <EditorialHeading as="h1">{content.heroTitle}<br /><em>{content.heroEmphasis}</em></EditorialHeading>
+        <p className="hero-copy">{content.heroCopy}</p>
         <div className="hero-actions">
-          <PrimaryButton href="#retreat" onDark>Explore the retreat</PrimaryButton>
-          <SecondaryButton href="#philosophy" onDark>Discover our philosophy</SecondaryButton>
+          <PrimaryButton href="#retreat" onDark>{content.heroPrimaryCta}</PrimaryButton>
+          <SecondaryButton href="#philosophy" onDark>{content.heroSecondaryCta}</SecondaryButton>
         </div>
       </div>
 

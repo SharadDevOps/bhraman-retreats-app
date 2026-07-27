@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { isAdmin } from "@/lib/admin-auth";
 import { isBlobConfigured, uploadMedia } from "@/lib/azure-storage";
@@ -48,13 +49,22 @@ export async function POST(request: Request) {
   });
 
   if (typeof slot === "string" && ["retreat", "founder", "hero"].includes(slot)) {
-    const row = await prisma.siteContent.findUnique({ where: { key: "mediaSlots" } });
-    const slots = row ? JSON.parse(row.value) : {};
+    const row = await prisma.siteSetting.findUnique({ where: { key: "media.slots" } });
+    const slots = row && row.value && typeof row.value === "object" && !Array.isArray(row.value)
+      ? { ...row.value as Record<string, unknown> }
+      : {};
     slots[slot] = url;
-    await prisma.siteContent.upsert({
-      where: { key: "mediaSlots" },
-      update: { value: JSON.stringify(slots), published: true },
-      create: { key: "mediaSlots", value: JSON.stringify(slots), published: true },
+    const jsonSlots = slots as Prisma.InputJsonObject;
+    await prisma.siteSetting.upsert({
+      where: { key: "media.slots" },
+      update: { value: jsonSlots, publicationStatus: "PUBLISHED", publishedAt: new Date() },
+      create: {
+        key: "media.slots",
+        value: jsonSlots,
+        description: "Homepage media slot references.",
+        publicationStatus: "PUBLISHED",
+        publishedAt: new Date(),
+      },
     });
   }
 

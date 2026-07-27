@@ -46,7 +46,9 @@ export async function POST(request: Request) {
         endDate: new Date(featuredRetreat.endDate),
         priceInPaise: featuredRetreat.priceInPaise,
         capacity: featuredRetreat.capacity,
-        status: "PUBLISHED",
+        status: "BOOKING_OPEN",
+        publicationStatus: "PUBLISHED",
+        publishedAt: new Date(),
       },
     });
 

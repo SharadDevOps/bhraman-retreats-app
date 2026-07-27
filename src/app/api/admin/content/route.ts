@@ -4,10 +4,10 @@ import { isAdmin } from "@/lib/admin-auth";
 import { retreatCatalog, selectFeaturedRetreat } from "@/data/retreat";
 
 async function readContent() {
-  const [retreatRows, testimonialsRow, mediaRow] = await Promise.all([
+  const [retreatRows, testimonials, mediaRow] = await Promise.all([
     prisma.retreat.findMany({ where: { slug: { in: retreatCatalog.map((retreat) => retreat.slug) } } }),
-    prisma.siteContent.findUnique({ where: { key: "testimonials" } }),
-    prisma.siteContent.findUnique({ where: { key: "mediaSlots" } }),
+    prisma.testimonial.findMany({ orderBy: { sortOrder: "asc" } }),
+    prisma.siteSetting.findUnique({ where: { key: "media.slots" } }),
   ]);
   const retreats = retreatCatalog.map((definition) => {
     const stored = retreatRows.find((row) => row.slug === definition.slug);
@@ -22,15 +22,16 @@ async function readContent() {
       endDate: definition.endDate,
       priceInPaise: definition.priceInPaise,
       capacity: definition.capacity,
-      status: "PUBLISHED",
+      status: "BOOKING_OPEN",
+      publicationStatus: "PUBLISHED",
       heroImageUrl: null,
       highlight: definition.highlight,
     };
   });
   return {
     retreat: selectFeaturedRetreat(retreats),
-    testimonials: testimonialsRow ? JSON.parse(testimonialsRow.value) : [],
-    media: mediaRow ? JSON.parse(mediaRow.value) : {},
+    testimonials,
+    media: mediaRow && typeof mediaRow.value === "object" ? mediaRow.value : {},
   };
 }
 
@@ -70,7 +71,9 @@ export async function PUT(request: Request) {
         endDate,
         priceInPaise,
         capacity,
-        status: "PUBLISHED",
+        status: "BOOKING_OPEN",
+        publicationStatus: "PUBLISHED",
+        publishedAt: new Date(),
       },
     });
   }
@@ -83,10 +86,19 @@ export async function PUT(request: Request) {
         location: String(t.location ?? "").trim(),
         quote: String(t.quote).trim(),
       }));
-    await prisma.siteContent.upsert({
-      where: { key: "testimonials" },
-      update: { value: JSON.stringify(clean), published: true },
-      create: { key: "testimonials", value: JSON.stringify(clean), published: true },
+    await prisma.$transaction(async (tx) => {
+      await tx.testimonial.deleteMany({});
+      if (clean.length) {
+        await tx.testimonial.createMany({
+          data: clean.map((testimonial: { name: string; location: string; quote: string }, index: number) => ({
+            slug: `guest-${index + 1}-${testimonial.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "anonymous"}`,
+            ...testimonial,
+            sortOrder: index,
+            publicationStatus: "PUBLISHED",
+            publishedAt: new Date(),
+          })),
+        });
+      }
     });
   }
 
