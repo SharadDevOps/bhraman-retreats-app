@@ -10,7 +10,8 @@ datasource db {
 }
 
 // Role values: GUEST, CONTENT_EDITOR, BOOKING_MANAGER, SUPER_ADMIN
-// RetreatStatus values: DRAFT, PUBLISHED, SOLD_OUT, COMPLETED, CANCELLED
+// ContentStatus values: DRAFT, PUBLISHED, ARCHIVED
+// RetreatStatus values: UPCOMING, BOOKING_OPEN, SOLD_OUT, COMPLETED, CANCELLED
 // BookingStatus values: PENDING, CONFIRMED, WAITLISTED, CANCELLED, REFUNDED
 // PaymentStatus values: PENDING, PAID, FAILED, REFUNDED, PARTIALLY_REFUNDED
 // (SQLite does not support Prisma enums; stored as strings.)
@@ -28,35 +29,77 @@ model User {
 }
 
 model Retreat {
-  id           String         @id @default(cuid())
-  slug         String         @unique
-  title        String
-  edition      String?
-  summary      String
-  description  String
-  location     String
-  startDate    DateTime
-  endDate      DateTime
-  priceInPaise Int
-  capacity     Int
-  status       String         @default("DRAFT")
-  heroImageUrl String?
-  itinerary    ItineraryDay[]
-  bookings     Booking[]
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  id                String       @id @default(cuid())
+  slug              String       @unique
+  title             String
+  edition           String?
+  summary           String
+  description       String
+  location          String
+  startDate         DateTime
+  endDate           DateTime
+  priceInPaise      Int
+  capacity          Int
+  status            String       @default("UPCOMING")
+  publicationStatus String       @default("DRAFT")
+  heroImageUrl      String?
+  highlight         String?
+  itinerary         RetreatDay[]
+  bookings          Booking[]
+  enquiries         Enquiry[]
+  publishedAt       DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([publicationStatus, status, startDate])
 }
 
-model ItineraryDay {
-  id          String  @id @default(cuid())
-  retreatId   String
-  retreat     Retreat @relation(fields: [retreatId], references: [id], onDelete: Cascade)
-  dayNumber   Int
-  element     String
-  title       String
-  description String?
-  activities  String // JSON-encoded array (SQLite has no Json type)
+model RetreatDay {
+  id                String             @id @default(cuid())
+  retreatId         String
+  retreat           Retreat            @relation(fields: [retreatId], references: [id], onDelete: Cascade)
+  dayNumber         Int
+  element           String
+  title             String
+  description       String?
+  legacyActivities  String?            @map("activities")
+  publicationStatus String             @default("DRAFT")
+  sections          ItinerarySection[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
   @@unique([retreatId, dayNumber])
+  @@index([retreatId, publicationStatus])
+}
+
+model ItinerarySection {
+  id                String              @id @default(cuid())
+  retreatDayId      String
+  retreatDay        RetreatDay          @relation(fields: [retreatDayId], references: [id], onDelete: Cascade)
+  title             String
+  description       String?
+  sortOrder         Int                 @default(0)
+  publicationStatus String              @default("DRAFT")
+  activities        ItineraryActivity[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([retreatDayId, sortOrder])
+}
+
+model ItineraryActivity {
+  id                 String           @id @default(cuid())
+  itinerarySectionId String
+  itinerarySection   ItinerarySection @relation(fields: [itinerarySectionId], references: [id], onDelete: Cascade)
+  title              String
+  description        String?
+  startTime          String?
+  sortOrder          Int              @default(0)
+  publicationStatus  String           @default("DRAFT")
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@index([itinerarySectionId, sortOrder])
 }
 
 model Booking {
@@ -85,12 +128,109 @@ model SiteContent {
 }
 
 model MediaAsset {
+  id                String   @id @default(cuid())
+  blobName          String   @unique
+  url               String
+  title             String?
+  altText           String
+  caption           String?
+  credit            String?
+  mimeType          String
+  width             Int?
+  height            Int?
+  publicationStatus String   @default("DRAFT")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Testimonial {
+  id                String    @id @default(cuid())
+  slug              String    @unique
+  name              String
+  location          String?
+  quote             String
+  sortOrder         Int       @default(0)
+  publicationStatus String    @default("DRAFT")
+  publishedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([publicationStatus, sortOrder])
+}
+
+model BlogPost {
+  id                String    @id @default(cuid())
+  slug              String    @unique
+  title             String
+  excerpt           String
+  content           String
+  coverImageUrl     String?
+  authorName        String?
+  publicationStatus String    @default("DRAFT")
+  publishedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([publicationStatus, publishedAt])
+}
+
+model FounderProfile {
+  id                String    @id @default(cuid())
+  slug              String    @unique
+  name              String
+  title             String
+  bio               String
+  imageUrl          String?
+  credentials       String?
+  publicationStatus String    @default("DRAFT")
+  publishedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([publicationStatus])
+}
+
+model Quote {
+  id                String    @id @default(cuid())
+  slug              String    @unique
+  text              String
+  attribution       String?
+  context           String?
+  sortOrder         Int       @default(0)
+  publicationStatus String    @default("DRAFT")
+  publishedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([publicationStatus, sortOrder])
+}
+
+model SiteSetting {
+  id                String    @id @default(cuid())
+  key               String    @unique
+  value             Json
+  description       String?
+  publicationStatus String    @default("DRAFT")
+  publishedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([publicationStatus])
+}
+
+model Enquiry {
   id        String   @id @default(cuid())
-  blobName  String   @unique
-  url       String
-  altText   String
-  mimeType  String
-  width     Int?
-  height    Int?
+  retreatId String?
+  retreat   Retreat? @relation(fields: [retreatId], references: [id], onDelete: SetNull)
+  name      String
+  email     String
+  phone     String?
+  message   String
+  status    String   @default("NEW")
+  source    String?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([retreatId])
 }

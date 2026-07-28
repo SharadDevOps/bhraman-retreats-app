@@ -1,15 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { itinerary } from "@/data/retreat";
 
-export function Itinerary() {
+export type ItineraryItem = {
+  day: string;
+  element: string;
+  title: string;
+  activities: string[];
+};
+
+export function Itinerary({ items, scheduleNote }: { items: ItineraryItem[]; scheduleNote: string }) {
   const [active, setActive] = useState(0);
-  const item = itinerary[active];
+  const item = items[active];
+  if (!item) return null;
   return (
     <div className="itinerary-shell">
       <div className="day-tabs" role="tablist" aria-label="Retreat days">
-        {itinerary.map((entry, index) => (
+        {items.map((entry, index) => (
           <button key={entry.day} className={active === index ? "active" : ""} onClick={() => setActive(index)} role="tab" aria-selected={active === index}>
             <span>0{index + 1}</span>{entry.element}
           </button>
@@ -19,7 +26,7 @@ export function Itinerary() {
         <p className="eyebrow">{item.day} · {item.element}</p>
         <h3>{item.title}</h3>
         <ol>{item.activities.map((activity, index) => <li key={activity}><span>{String(index + 1).padStart(2, "0")}</span>{activity}</li>)}</ol>
-        <p className="schedule-note">The complete time-by-time schedule becomes available in your retreat account after booking.</p>
+        <p className="schedule-note">{scheduleNote}</p>
       </div>
     </div>
   );

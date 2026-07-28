@@ -1,27 +1,37 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdmin } from "@/lib/admin-auth";
-import { upcomingRetreat } from "@/data/retreat";
+import { retreatCatalog, selectFeaturedRetreat } from "@/data/retreat";
 
 async function readContent() {
-  const [retreat, testimonialsRow, mediaRow] = await Promise.all([
-    prisma.retreat.findUnique({ where: { slug: upcomingRetreat.slug } }),
-    prisma.siteContent.findUnique({ where: { key: "testimonials" } }),
-    prisma.siteContent.findUnique({ where: { key: "mediaSlots" } }),
+  const [retreatRows, testimonials, mediaRow] = await Promise.all([
+    prisma.retreat.findMany({ where: { slug: { in: retreatCatalog.map((retreat) => retreat.slug) } } }),
+    prisma.testimonial.findMany({ orderBy: { sortOrder: "asc" } }),
+    prisma.siteSetting.findUnique({ where: { key: "media.slots" } }),
   ]);
+  const retreats = retreatCatalog.map((definition) => {
+    const stored = retreatRows.find((row) => row.slug === definition.slug);
+    return stored ?? {
+      slug: definition.slug,
+      title: definition.title,
+      edition: definition.edition,
+      summary: definition.summary,
+      description: definition.description,
+      location: definition.location,
+      startDate: definition.startDate,
+      endDate: definition.endDate,
+      priceInPaise: definition.priceInPaise,
+      capacity: definition.capacity,
+      status: "BOOKING_OPEN",
+      publicationStatus: "PUBLISHED",
+      heroImageUrl: null,
+      highlight: definition.highlight,
+    };
+  });
   return {
-    retreat: retreat ?? {
-      title: upcomingRetreat.title,
-      edition: upcomingRetreat.edition,
-      summary: upcomingRetreat.summary,
-      location: upcomingRetreat.location,
-      startDate: upcomingRetreat.startDate,
-      endDate: upcomingRetreat.endDate,
-      priceInPaise: upcomingRetreat.priceInPaise,
-      capacity: upcomingRetreat.capacity,
-    },
-    testimonials: testimonialsRow ? JSON.parse(testimonialsRow.value) : [],
-    media: mediaRow ? JSON.parse(mediaRow.value) : {},
+    retreat: selectFeaturedRetreat(retreats),
+    testimonials,
+    media: mediaRow && typeof mediaRow.value === "object" ? mediaRow.value : {},
   };
 }
 
@@ -39,6 +49,7 @@ export async function PUT(request: Request) {
 
   if (body.retreat) {
     const r = body.retreat;
+    const definition = retreatCatalog.find((retreat) => retreat.slug === r.slug) ?? selectFeaturedRetreat(retreatCatalog);
     const priceInPaise = Math.round(Number(r.priceInPaise));
     const capacity = Math.round(Number(r.capacity));
     const startDate = new Date(r.startDate);
@@ -47,20 +58,22 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Please fill all retreat fields with valid values." }, { status: 400 });
     }
     await prisma.retreat.upsert({
-      where: { slug: upcomingRetreat.slug },
+      where: { slug: definition.slug },
       update: { title: r.title, edition: r.edition ?? null, summary: r.summary ?? "", location: r.location, startDate, endDate, priceInPaise, capacity },
       create: {
-        slug: upcomingRetreat.slug,
+        slug: definition.slug,
         title: r.title,
         edition: r.edition ?? null,
         summary: r.summary ?? "",
-        description: upcomingRetreat.description,
+        description: definition.description,
         location: r.location,
         startDate,
         endDate,
         priceInPaise,
         capacity,
-        status: "PUBLISHED",
+        status: "BOOKING_OPEN",
+        publicationStatus: "PUBLISHED",
+        publishedAt: new Date(),
       },
     });
   }
@@ -73,10 +86,19 @@ export async function PUT(request: Request) {
         location: String(t.location ?? "").trim(),
         quote: String(t.quote).trim(),
       }));
-    await prisma.siteContent.upsert({
-      where: { key: "testimonials" },
-      update: { value: JSON.stringify(clean), published: true },
-      create: { key: "testimonials", value: JSON.stringify(clean), published: true },
+    await prisma.$transaction(async (tx) => {
+      await tx.testimonial.deleteMany({});
+      if (clean.length) {
+        await tx.testimonial.createMany({
+          data: clean.map((testimonial: { name: string; location: string; quote: string }, index: number) => ({
+            slug: `guest-${index + 1}-${testimonial.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "anonymous"}`,
+            ...testimonial,
+            sortOrder: index,
+            publicationStatus: "PUBLISHED",
+            publishedAt: new Date(),
+          })),
+        });
+      }
     });
   }
 

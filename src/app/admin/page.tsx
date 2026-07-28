@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2, LogOut, Plus, Trash2, Upload } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 
 type Testimonial = { name: string; location: string; quote: string };
 type RetreatContent = {
-  title: string; edition: string | null; summary: string; location: string;
+  slug: string; title: string; edition: string | null; summary: string; location: string;
   startDate: string; endDate: string; priceInPaise: number; capacity: number;
 };
 type Media = { retreat?: string; founder?: string; hero?: string };
@@ -112,7 +113,7 @@ export default function AdminPage() {
     return (
       <main className="admin-shell">
         <form className="admin-login" onSubmit={handleLogin}>
-          <span className="brand-mark">भ</span>
+          <BrandLogo />
           <h1>Admin</h1>
           <p>Bhraman Retreats content manager</p>
           <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} autoFocus />
@@ -126,7 +127,7 @@ export default function AdminPage() {
   return (
     <main className="admin-shell">
       <header className="admin-header">
-        <Link className="brand" href="/"><span className="brand-mark">भ</span><span>Bhraman <i>Admin</i></span></Link>
+        <Link className="brand" href="/"><BrandLogo context="admin" /></Link>
         <nav>{TABS.map((t) => <button key={t} className={tab === t ? "active" : ""} onClick={() => setTab(t)}>{t}</button>)}</nav>
         <button className="admin-logout" onClick={handleLogout}><LogOut size={15} /> Sign out</button>
       </header>
@@ -137,6 +138,7 @@ export default function AdminPage() {
       {tab === "Content" && retreat && (
         <form className="admin-card" onSubmit={(e) => { e.preventDefault(); save({ retreat }, "Retreat content saved"); }}>
           <h2>Upcoming retreat</h2>
+          <p className="admin-note">Editing the next retreat selected automatically from its dates: {retreat.title}.</p>
           <div className="admin-grid">
             <label>Title<input value={retreat.title} onChange={(e) => setRetreat({ ...retreat, title: e.target.value })} /></label>
             <label>Edition<input value={retreat.edition ?? ""} onChange={(e) => setRetreat({ ...retreat, edition: e.target.value })} /></label>
