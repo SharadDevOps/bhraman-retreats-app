@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2, LogOut, Plus, Trash2, Upload } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
+import { publishMediaAsset, uploadMediaForReview } from "@/lib/media-upload-client";
 
 type Testimonial = { name: string; location: string; quote: string };
 type RetreatContent = {
@@ -11,6 +12,7 @@ type RetreatContent = {
   startDate: string; endDate: string; priceInPaise: number; capacity: number;
 };
 type Media = { retreat?: string; founder?: string; hero?: string };
+type PendingMedia = { id: string; url: string };
 type Booking = {
   id: string; reference: string; guests: number; totalInPaise: number;
   status: string; paymentStatus: string; dietaryNotes: string | null; healthNotes: string | null;
@@ -27,6 +29,7 @@ export default function AdminPage() {
   const [retreat, setRetreat] = useState<RetreatContent | null>(null);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [media, setMedia] = useState<Media>({});
+  const [pendingMedia, setPendingMedia] = useState<Partial<Record<"retreat" | "founder", PendingMedia>>>({});
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -86,17 +89,46 @@ export default function AdminPage() {
     flash(okMsg);
   }
 
+  function mediaFolderFor(slot: "retreat" | "founder") {
+    if (slot === "founder") return "founder/profile";
+    if (retreat?.slug.includes("uttarakhand")) return "retreats/uttarakhand-december/cover";
+    if (retreat?.slug.includes("edition-1")) return "retreats/ladakh-edition-1/cover";
+    return "retreats/ladakh-edition-2/cover";
+  }
+
   async function uploadImage(slot: "retreat" | "founder", file: File) {
     setBusy(true); setError(null);
-    const form = new FormData();
-    form.append("file", file);
-    form.append("slot", slot);
-    const res = await fetch("/api/admin/upload", { method: "POST", body: form });
-    setBusy(false);
-    if (!res.ok) { fail((await res.json()).error ?? "Upload failed"); return; }
-    const { url } = await res.json();
-    setMedia((m) => ({ ...m, [slot]: url }));
-    flash("Image uploaded");
+    try {
+      const label = slot === "founder" ? "Bhraman founder portrait" : `${retreat?.title ?? "Bhraman retreat"} cover`;
+      const asset = await uploadMediaForReview(file, {
+        folder: mediaFolderFor(slot),
+        altText: label,
+        title: label,
+      });
+      setPendingMedia((current) => ({ ...current, [slot]: { id: asset.id, url: asset.url } }));
+      setMedia((current) => ({ ...current, [slot]: asset.url }));
+      flash("Upload confirmed. Review and publish it to make it live.");
+    } catch (uploadError) {
+      fail(uploadError instanceof Error ? uploadError.message : "Upload failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function publishImage(slot: "retreat" | "founder") {
+    const pending = pendingMedia[slot];
+    if (!pending) return;
+    setBusy(true); setError(null);
+    try {
+      const asset = await publishMediaAsset(pending.id, slot);
+      setMedia((current) => ({ ...current, [slot]: asset.url }));
+      setPendingMedia((current) => ({ ...current, [slot]: undefined }));
+      flash("Media reviewed and published.");
+    } catch (publishError) {
+      fail(publishError instanceof Error ? publishError.message : "Publish failed");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function updateBooking(id: string, patch: { status?: string; paymentStatus?: string }) {
@@ -182,12 +214,20 @@ export default function AdminPage() {
                 <label className="admin-upload">
                   <Upload size={15} /> {media[slot] ? "Replace image" : "Upload image"}
                   <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" hidden
-                    onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(slot, f); e.target.value = ""; }} />
+                    onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadImage(slot, file); e.target.value = ""; }} />
                 </label>
+                {pendingMedia[slot] && (
+                  <div className="admin-media-review">
+                    <p className="admin-note">Uploaded to Azure Blob Storage as a draft.</p>
+                    <button type="button" className="admin-add" disabled={busy} onClick={() => publishImage(slot)}>
+                      Publish to site
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
-          <p className="admin-note">JPEG, PNG, WebP or AVIF, up to 8 MB. Images appear on the homepage immediately.</p>
+          <p className="admin-note">JPEG, PNG, WebP or AVIF, up to 20 MB. Files upload directly to Azure and remain draft until reviewed and published.</p>
         </div>
       )}
 

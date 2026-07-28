@@ -56,6 +56,9 @@ export async function POST(request: Request, context: { params: Promise<{ entity
   const { entity } = await context.params;
   const authorization = await authorize(entity);
   if ("response" in authorization) return authorization.response;
+  if (entity === "media-assets") {
+    return apiError(405, "CONTROLLED_UPLOAD_REQUIRED", "Use the media upload authorization endpoint to create assets.");
+  }
   try {
     const body = await request.json().catch(() => null);
     const validation = validateCmsEntity(entity, body);

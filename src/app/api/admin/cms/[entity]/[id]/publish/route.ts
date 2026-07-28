@@ -26,8 +26,15 @@ export async function POST(request: Request, context: { params: Promise<{ entity
     return apiError(422, "VALIDATION_ERROR", "Action must be publish, draft or archive.");
   }
   try {
+    if (entity === "media-assets" && action === "publish") {
+      const asset = await getCmsDelegate(config).findUnique({ where: { id } });
+      if (!asset) return apiError(404, "NOT_FOUND", "Media asset not found.");
+      if (asset.uploadStatus !== "CONFIRMED") {
+        return apiError(409, "UPLOAD_NOT_CONFIRMED", "Confirm the Blob upload before publishing.");
+      }
+    }
     const workflow = actions[action as keyof typeof actions];
-    const hasPublishedAt = ["retreats", "testimonials", "blogs", "founders", "quotes", "site-settings"].includes(entity);
+    const hasPublishedAt = ["retreats", "testimonials", "blogs", "founders", "quotes", "media-assets", "site-settings"].includes(entity);
     const item = await getCmsDelegate(config).update({
       where: { id },
       data: {

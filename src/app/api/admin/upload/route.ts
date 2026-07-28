@@ -45,7 +45,18 @@ export async function POST(request: Request) {
   }
 
   await prisma.mediaAsset.create({
-    data: { blobName, url, altText: altText || safeName, mimeType: file.type },
+    data: {
+      blobName,
+      url,
+      kind: "IMAGE",
+      folder: "legacy",
+      originalFileName: file.name,
+      altText: altText || safeName,
+      mimeType: file.type,
+      sizeBytes: file.size,
+      uploadStatus: "CONFIRMED",
+      uploadedAt: new Date(),
+    },
   });
 
   if (typeof slot === "string" && ["retreat", "founder", "hero"].includes(slot)) {
