@@ -1,40 +1,162 @@
-import { prisma } from "./prisma";
-import { brandAssets } from "@/data/brand";
-import {
-  elements as fallbackElements,
-  itinerary as fallbackItinerary,
-  retreatCatalog,
-  selectFeaturedRetreat,
-} from "@/data/retreat";
-import type { ItineraryItem } from "@/components/itinerary";
-
-export type Testimonial = { name: string; location?: string | null; quote: string };
-export type MediaSlots = { retreat?: string; founder?: string; hero?: string };
-export type FounderContent = {
-  name: string;
-  title: string;
-  bio?: string;
-  imageUrl?: string | null;
-  credentials?: string | null;
-};
-export type ElementContent = {
-  key: string; symbol: string; name: string; sanskrit: string;
-  verb: string; practice: string; detail: string;
-};
 export type HomeContent = {
-  heroEyebrow: string; heroTitle: string; heroEmphasis: string; heroCopy: string;
-  heroPrimaryCta: string; heroSecondaryCta: string; introTagline: string;
-  philosophyLabel: string; philosophyTitle: string; philosophyEmphasis: string;
-  philosophyParagraphs: string[]; philosophyCta: string;
-  elementsLabel: string; elementsTitle: string; elementsEmphasis: string; elementsIntro: string;
-  itineraryLabel: string; itineraryTitle: string; itineraryEmphasis: string; itineraryIntro: string; itineraryNote: string;
-  founderLabel: string; founderTitle: string; founderEmphasis: string;
-  testimonialsLabel: string; testimonialsTitle: string; testimonialsEmphasis: string;
-  closingLabel: string; closingTitle: string; closingEmphasis: string; closingCopy: string;
+  heroEyebrow: string;
+  heroTitle: string;
+  heroEmphasis: string;
+  heroCopy: string;
+  heroPrimaryCta: string;
+  heroSecondaryCta: string;
+  introTagline: string;
+  philosophyLabel: string;
+  philosophyTitle: string;
+  philosophyEmphasis: string;
+  philosophyParagraphs: string[];
+  philosophyCta: string;
+  elementsLabel: string;
+  elementsTitle: string;
+  elementsEmphasis: string;
+  elementsIntro: string;
+  experienceLabel: string;
+  experienceTitle: string;
+  experienceCopy: string;
+  retreatLabel: string;
+  itineraryLabel: string;
+  itineraryTitle: string;
+  itineraryEmphasis: string;
+  itineraryIntro: string;
+  itineraryNote: string;
+  founderLabel: string;
+  founderTitle: string;
+  founderEmphasis: string;
+  memoriesLabel: string;
+  memoriesTitle: string;
+  memoriesCopy: string;
+  testimonialsLabel: string;
+  testimonialsTitle: string;
+  testimonialsEmphasis: string;
+  blogLabel: string;
+  blogTitle: string;
+  enquiryLabel: string;
+  enquiryTitle: string;
+  enquiryEmphasis: string;
+  enquiryCopy: string;
   footerTagline: string;
 };
 
-const defaultHomeContent: HomeContent = {
+export type ElementContent = {
+  key: string;
+  symbol: string;
+  name: string;
+  sanskrit: string;
+  verb: string;
+  practice: string;
+  detail: string;
+};
+
+export type RetreatDayContent = {
+  id: string;
+  dayNumber: number;
+  element: string;
+  title: string;
+  description?: string | null;
+  sections: Array<{
+    id: string;
+    title: string;
+    description?: string | null;
+    activities: Array<{ id: string; title: string; description?: string | null; startTime?: string | null }>;
+  }>;
+};
+
+export type FeaturedRetreat = {
+  id: string;
+  slug: string;
+  title: string;
+  edition?: string | null;
+  summary: string;
+  description: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  priceInPaise: number;
+  capacity: number;
+  status: string;
+  heroImageUrl?: string | null;
+  highlight?: string | null;
+  itinerary: RetreatDayContent[];
+};
+
+export type FounderContent = {
+  id: string;
+  slug: string;
+  name: string;
+  title: string;
+  bio: string;
+  imageUrl?: string | null;
+  credentials?: string | null;
+};
+
+export type TestimonialContent = {
+  id: string;
+  slug: string;
+  name: string;
+  location?: string | null;
+  quote: string;
+  sortOrder: number;
+};
+
+export type BlogContent = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  coverImageUrl?: string | null;
+  authorName?: string | null;
+  publishedAt?: string | null;
+};
+
+export type BlogDetailContent = BlogContent & {
+  content: string;
+  updatedAt?: string | null;
+};
+
+export type QuoteContent = {
+  id: string;
+  slug: string;
+  text: string;
+  attribution?: string | null;
+  context?: string | null;
+  sortOrder: number;
+};
+
+export type MediaContent = {
+  id: string;
+  url: string;
+  kind: string;
+  folder: string;
+  title?: string | null;
+  altText: string;
+  caption?: string | null;
+  mimeType: string;
+  width?: number | null;
+  height?: number | null;
+};
+
+type ApiEnvelope<T> = { data: T };
+type SettingsPayload = Record<string, unknown>;
+
+export type HomepageData = {
+  content: HomeContent;
+  elements: ElementContent[];
+  retreat: FeaturedRetreat | null;
+  founder: FounderContent | null;
+  testimonials: TestimonialContent[];
+  blog: BlogContent | null;
+  quotes: QuoteContent[];
+  media: MediaContent[];
+  mediaSlots: Record<string, string>;
+  unavailable: string[];
+};
+
+export const defaultHomeContent: HomeContent = {
   heroEyebrow: "Elemental retreats · Himalayas, India",
   heroTitle: "Remember your",
   heroEmphasis: "natural rhythm.",
@@ -54,178 +176,127 @@ const defaultHomeContent: HomeContent = {
   elementsTitle: "Five pathways back to",
   elementsEmphasis: "balance.",
   elementsIntro: "Each element holds a distinct quality. Together, they create a complete journey through body, breath, energy and awareness.",
+  experienceLabel: "Experience Bhraman",
+  experienceTitle: "A slower way to travel within.",
+  experienceCopy: "Small circles, elemental practice and meaningful Himalayan immersion create room for genuine rest.",
+  retreatLabel: "Next Bhraman journey",
   itineraryLabel: "Your five-day rhythm",
   itineraryTitle: "A journey that",
   itineraryEmphasis: "unfolds slowly.",
   itineraryIntro: "Every day honours one element through movement, traditional practice, conscious nourishment and reflection.",
-  itineraryNote: "The complete time-by-time schedule becomes available in your retreat account after booking.",
+  itineraryNote: "The complete time-by-time schedule becomes available after your place is confirmed.",
   founderLabel: "Meet your guide",
   founderTitle: "Rooted in medicine.",
   founderEmphasis: "Guided by nature.",
+  memoriesLabel: "Previous retreat memories",
+  memoriesTitle: "Moments carried home.",
+  memoriesCopy: "A glimpse into earlier Bhraman journeys, shared with care by our retreat community.",
   testimonialsLabel: "Voices from the journey",
   testimonialsTitle: "What guests",
   testimonialsEmphasis: "carry home.",
-  closingLabel: "Your next journey awaits",
-  closingTitle: "Come back to what",
-  closingEmphasis: "feels essential.",
-  closingCopy: "Join the next Bhraman retreat and experience life in its natural rhythm.",
+  blogLabel: "From the journal",
+  blogTitle: "Thoughts for the journey within.",
+  enquiryLabel: "Begin a conversation",
+  enquiryTitle: "Your next journey",
+  enquiryEmphasis: "starts here.",
+  enquiryCopy: "Tell us what is drawing you toward Bhraman. Our team will respond with thoughtful guidance.",
   footerTagline: "Silence as teacher · Element as medicine · Nature as guide",
 };
 
-export type SiteData = {
-  retreat: {
-    slug: string; title: string; edition: string | null; summary: string; location: string;
-    startDate: Date; endDate: Date; priceInPaise: number; capacity: number;
-    highlight?: string;
-  };
-  testimonials: Testimonial[];
-  media: MediaSlots;
-  itinerary: ItineraryItem[];
-  founder: FounderContent;
-  elements: ElementContent[];
-  content: HomeContent;
-  founderQuote: string;
-};
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
 
-function fallbackData(now = new Date()): SiteData {
-  const retreat = selectFeaturedRetreat(retreatCatalog, now);
+const isString = (value: unknown): value is string => typeof value === "string" && value.trim().length > 0;
+
+function mapContent(value: unknown): HomeContent {
+  if (!isRecord(value)) return defaultHomeContent;
+  const mapped = { ...defaultHomeContent };
+  for (const key of Object.keys(defaultHomeContent) as Array<keyof HomeContent>) {
+    const candidate = value[key];
+    if (key === "philosophyParagraphs") {
+      if (Array.isArray(candidate) && candidate.every(isString)) mapped[key] = candidate;
+    } else if (isString(candidate)) {
+      (mapped as unknown as Record<string, unknown>)[key] = candidate;
+    }
+  }
+  return mapped;
+}
+
+function mapElements(value: unknown): ElementContent[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!isRecord(item)) return [];
+    const keys: Array<keyof ElementContent> = ["key", "symbol", "name", "sanskrit", "verb", "practice", "detail"];
+    if (!keys.every((key) => isString(item[key]))) return [];
+    return [{ key: item.key, symbol: item.symbol, name: item.name, sanskrit: item.sanskrit, verb: item.verb, practice: item.practice, detail: item.detail } as ElementContent];
+  }).slice(0, 5);
+}
+
+function mapMediaSlots(value: unknown): Record<string, string> {
+  if (!isRecord(value)) return {};
+  return Object.fromEntries(Object.entries(value).filter((entry): entry is [string, string] => isString(entry[1])));
+}
+
+function envelopeData<T>(result: PromiseSettledResult<ApiEnvelope<T>>): T | null {
+  return result.status === "fulfilled" ? result.value.data : null;
+}
+
+export function mapHomepageResponses(results: {
+  retreat: PromiseSettledResult<ApiEnvelope<FeaturedRetreat>>;
+  settings: PromiseSettledResult<ApiEnvelope<SettingsPayload>>;
+  founder: PromiseSettledResult<ApiEnvelope<FounderContent>>;
+  testimonials: PromiseSettledResult<ApiEnvelope<TestimonialContent[]>>;
+  blogs: PromiseSettledResult<ApiEnvelope<BlogContent[]>>;
+  quotes: PromiseSettledResult<ApiEnvelope<QuoteContent[]>>;
+  media: PromiseSettledResult<ApiEnvelope<MediaContent[]>>;
+}): HomepageData {
+  const settings = envelopeData(results.settings) ?? {};
+  const unavailable = Object.entries(results)
+    .filter(([, result]) => result.status === "rejected")
+    .map(([key]) => key);
+
   return {
-    retreat: {
-      slug: retreat.slug,
-      title: retreat.title,
-      edition: retreat.edition,
-      summary: retreat.summary,
-      location: retreat.location,
-      startDate: new Date(retreat.startDate),
-      endDate: new Date(retreat.endDate),
-      priceInPaise: retreat.priceInPaise,
-      capacity: retreat.capacity,
-      highlight: retreat.highlight,
-    },
-    testimonials: [],
-    media: brandAssets.founderFallback ? { founder: brandAssets.founderFallback } : {},
-    itinerary: fallbackItinerary.map((day) => ({ ...day, activities: [...day.activities] })),
-    founder: {
-      name: "Dr. Pratiksha Shekhawat",
-      title: "Doctor, yoga and elemental therapist",
-    },
-    elements: fallbackElements.map((element) => ({ ...element })),
-    content: defaultHomeContent,
-    founderQuote: "Nature holds everything we need to heal. We only have to learn how to listen again.",
+    content: mapContent(settings["home.content"]),
+    elements: mapElements(settings["home.elements"]),
+    retreat: envelopeData(results.retreat),
+    founder: envelopeData(results.founder),
+    testimonials: (envelopeData(results.testimonials) ?? []).slice(0, 3),
+    blog: (envelopeData(results.blogs) ?? [])[0] ?? null,
+    quotes: (envelopeData(results.quotes) ?? []).slice(0, 6),
+    media: (envelopeData(results.media) ?? []).filter((asset) => asset.kind === "IMAGE" || asset.mimeType.startsWith("image/")),
+    mediaSlots: mapMediaSlots(settings["media.slots"]),
+    unavailable,
   };
 }
 
-export async function getSiteData(): Promise<SiteData> {
-  const now = new Date();
-  const fallback = fallbackData(now);
+async function fetchApi<T>(origin: string, path: string): Promise<ApiEnvelope<T>> {
+  const response = await fetch(new URL(path, origin), {
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error(`${path} returned ${response.status}`);
+  return response.json() as Promise<ApiEnvelope<T>>;
+}
+
+export async function getHomepageData(origin: string): Promise<HomepageData> {
+  const [retreat, settings, founder, testimonials, blogs, quotes, media] = await Promise.allSettled([
+    fetchApi<FeaturedRetreat>(origin, "/api/public/retreats/featured"),
+    fetchApi<SettingsPayload>(origin, "/api/public/site-settings"),
+    fetchApi<FounderContent>(origin, "/api/public/founder"),
+    fetchApi<TestimonialContent[]>(origin, "/api/public/testimonials?page=1&pageSize=3&sort=sortOrder&order=asc"),
+    fetchApi<BlogContent[]>(origin, "/api/public/blogs?page=1&pageSize=1&sort=publishedAt&order=desc"),
+    fetchApi<QuoteContent[]>(origin, "/api/public/quotes?page=1&pageSize=6&sort=sortOrder&order=asc"),
+    fetchApi<MediaContent[]>(origin, "/api/public/media?page=1&pageSize=100"),
+  ]);
+  return mapHomepageResponses({ retreat, settings, founder, testimonials, blogs, quotes, media });
+}
+
+export async function getBlogPost(origin: string, slug: string): Promise<BlogDetailContent | null> {
   try {
-    const [retreatRows, testimonials, settings, founder, founderQuote] = await Promise.all([
-      prisma.retreat.findMany({
-        where: {
-          slug: { in: retreatCatalog.map((retreat) => retreat.slug) },
-          publicationStatus: "PUBLISHED",
-        },
-        include: {
-          itinerary: {
-            where: { publicationStatus: "PUBLISHED" },
-            orderBy: { dayNumber: "asc" },
-            include: {
-              sections: {
-                where: { publicationStatus: "PUBLISHED" },
-                orderBy: { sortOrder: "asc" },
-                include: {
-                  activities: {
-                    where: { publicationStatus: "PUBLISHED" },
-                    orderBy: { sortOrder: "asc" },
-                  },
-                },
-              },
-            },
-          },
-        },
-      }),
-      prisma.testimonial.findMany({
-        where: { publicationStatus: "PUBLISHED" },
-        orderBy: { sortOrder: "asc" },
-        select: { name: true, location: true, quote: true },
-      }),
-      prisma.siteSetting.findMany({
-        where: { key: { in: ["media.slots", "home.content", "home.elements"] }, publicationStatus: "PUBLISHED" },
-      }),
-      prisma.founderProfile.findFirst({
-        where: { publicationStatus: "PUBLISHED" },
-        orderBy: { updatedAt: "desc" },
-        select: { name: true, title: true, bio: true, imageUrl: true, credentials: true },
-      }),
-      prisma.quote.findFirst({
-        where: { publicationStatus: "PUBLISHED", context: "Founder philosophy" },
-        orderBy: { sortOrder: "asc" },
-        select: { text: true },
-      }),
-    ]);
-    const retreats = retreatCatalog.map((definition) => {
-      const stored = retreatRows.find((row) => row.slug === definition.slug);
-      return stored ? {
-        slug: stored.slug,
-        title: stored.title,
-        edition: stored.edition,
-        summary: stored.summary,
-        location: stored.location,
-        startDate: stored.startDate,
-        endDate: stored.endDate,
-        priceInPaise: stored.priceInPaise,
-        capacity: stored.capacity,
-        highlight: stored.highlight ?? definition.highlight,
-        itinerary: stored.itinerary,
-      } : {
-        slug: definition.slug,
-        title: definition.title,
-        edition: definition.edition,
-        summary: definition.summary,
-        location: definition.location,
-        startDate: new Date(definition.startDate),
-        endDate: new Date(definition.endDate),
-        priceInPaise: definition.priceInPaise,
-        capacity: definition.capacity,
-        highlight: definition.highlight,
-        itinerary: [],
-      };
-    });
-    const selectedRetreat = selectFeaturedRetreat(retreats, now);
-    const dynamicItinerary = selectedRetreat.itinerary.map((day) => ({
-      day: `Day ${day.dayNumber}`,
-      element: day.element,
-      title: day.title,
-      activities: day.sections.flatMap((section) => section.activities.map((activity) => activity.title)),
-    }));
-    const setting = (key: string) => settings.find((row) => row.key === key)?.value;
-    const mediaSetting = setting("media.slots");
-    const mediaValue = mediaSetting && typeof mediaSetting === "object" && !Array.isArray(mediaSetting)
-      ? mediaSetting as MediaSlots
-      : {};
-    const contentSetting = setting("home.content");
-    const content = contentSetting && typeof contentSetting === "object" && !Array.isArray(contentSetting)
-      ? { ...defaultHomeContent, ...contentSetting } as HomeContent
-      : fallback.content;
-    const elementSetting = setting("home.elements");
-    const elements = Array.isArray(elementSetting) ? elementSetting as ElementContent[] : fallback.elements;
-    return {
-      retreat: selectedRetreat,
-      testimonials,
-      media: {
-        ...fallback.media,
-        ...mediaValue,
-        ...(founder?.imageUrl ? { founder: founder.imageUrl } : {}),
-      },
-      itinerary: dynamicItinerary.length ? dynamicItinerary : fallback.itinerary,
-      founder: founder ?? fallback.founder,
-      elements,
-      content,
-      founderQuote: founderQuote?.text ?? fallback.founderQuote,
-    };
+    const response = await fetchApi<BlogDetailContent>(origin, `/api/public/blogs/${encodeURIComponent(slug)}`);
+    return response.data;
   } catch {
-    // Database not migrated or available yet — serve defaults.
-    return fallback;
+    return null;
   }
 }
 

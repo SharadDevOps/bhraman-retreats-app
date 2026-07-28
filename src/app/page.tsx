@@ -1,6 +1,6 @@
 import { CalendarDays, MapPin, Sparkles } from "lucide-react";
+import { headers } from "next/headers";
 import { BrandLogo } from "@/components/brand-logo";
-import { BookingForm } from "@/components/booking-form";
 import { CinematicHero } from "@/components/cinematic-hero";
 import {
   EditorialHeading,
@@ -13,58 +13,225 @@ import {
   SectionContainer,
   SectionLabel,
 } from "@/components/design-system";
-import { ScrollReveal } from "@/components/scroll-reveal";
+import { EnquiryForm } from "@/components/enquiry-form";
+import { Itinerary, type ItineraryItem } from "@/components/itinerary";
 import { Fireflies } from "@/components/nature-effects";
-import { Itinerary } from "@/components/itinerary";
-import { formatDateRange, getSiteData } from "@/lib/content";
+import { ScrollReveal } from "@/components/scroll-reveal";
+import { formatDateRange, getHomepageData, type MediaContent } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
+function mediaIn(media: MediaContent[], folders: string[]) {
+  return media.filter((asset) => folders.some((folder) => asset.folder === folder || asset.folder.startsWith(`${folder}/`)));
+}
+
+function ContentNotice({ label }: { label: string }) {
+  return <p className="content-notice" role="status">{label} is temporarily unavailable. The rest of the journey remains available.</p>;
+}
+
 export default async function Home() {
-  const { retreat, testimonials, media, itinerary, founder, elements, content, founderQuote } = await getSiteData();
-  const start = new Date(retreat.startDate);
-  const end = new Date(retreat.endDate);
-  const price = `₹${(retreat.priceInPaise / 100).toLocaleString("en-IN")}`;
-  return <main id="top">
-    <ScrollReveal />
-    <CinematicHero founderName={founder.name} content={content} />
+  const incomingHeaders = await headers();
+  const host = incomingHeaders.get("x-forwarded-host") ?? incomingHeaders.get("host") ?? "localhost:3000";
+  const protocol = incomingHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+  const data = await getHomepageData(`${protocol}://${host}`);
+  const { content, retreat, founder, elements, testimonials, blog, quotes, media, mediaSlots, unavailable } = data;
 
-    <section className="manifesto section" id="philosophy">
-      <div><SectionLabel>{content.philosophyLabel}</SectionLabel><span className="botanical" aria-hidden="true">❦</span></div>
-      <div><EditorialHeading>{content.philosophyTitle}<br /><em>{content.philosophyEmphasis}</em></EditorialHeading>{content.philosophyParagraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}<SecondaryButton href="#elements" showArrow>{content.philosophyCta}</SecondaryButton></div>
-    </section>
+  const itinerary: ItineraryItem[] = (retreat?.itinerary ?? []).map((day) => ({
+    day: `Day ${day.dayNumber}`,
+    element: day.element,
+    title: day.title,
+    activities: day.sections.flatMap((section) => section.activities.map((activity) => activity.title)),
+  }));
+  const founderQuote = quotes.find((quote) => quote.context === "Founder philosophy") ?? quotes[0];
+  const retreatMedia = mediaIn(media, ["retreats/ladakh-edition-2/cover", "retreats/uttarakhand-december/cover"])[0];
+  const heroMedia = media.find((asset) => asset.url === mediaSlots.hero) ?? retreatMedia;
+  const founderMedia = mediaIn(media, ["founder/profile"])[0];
+  const memoryMedia = mediaIn(media, [
+    "retreats/ladakh-edition-1/gallery",
+    "retreats/ladakh-edition-1/participants",
+    "retreats/ladakh-edition-1/monastery",
+  ]).slice(0, 3);
+  const blogMedia = mediaIn(media, ["blog/why-choose-bhraman/cover"])[0];
 
-    <section className="elements-section" id="elements">
-      <SectionContainer className="section-heading"><div><SectionLabel>{content.elementsLabel}</SectionLabel><EditorialHeading>{content.elementsTitle}<br /><em>{content.elementsEmphasis}</em></EditorialHeading></div><p>{content.elementsIntro}</p></SectionContainer>
-      <SectionContainer className="element-grid">{elements.map((element) => <article className={`element-card ${element.key}`} key={element.key}><ElementBadge number={element.symbol} label={element.sanskrit} /><h3>{element.name}</h3><strong>{element.verb}</strong><div className="element-reveal"><span>{element.practice}</span><p>{element.detail}</p></div></article>)}</SectionContainer>
-    </section>
+  return (
+    <main id="top">
+      <ScrollReveal />
 
-    <section className="retreat-section" id="retreat">
-      <div className="retreat-art"><ResponsiveMedia src={media.retreat} alt={retreat.title} fallbackTitle={retreat.title} fallbackHint="Retreat image reference not configured" priority /><RetreatDateBadge start={start} end={end} /></div>
-      <div className="retreat-copy"><SectionLabel>Next Bhraman journey</SectionLabel><EditorialHeading>{retreat.title}</EditorialHeading><p className="lead">{retreat.summary}</p>{retreat.highlight && <p className="retreat-highlight"><Sparkles size={16} aria-hidden="true" /> Highlight · {retreat.highlight}</p>}<div className="retreat-meta"><span><MapPin /> {retreat.location}</span><span><CalendarDays /> {formatDateRange(start, end)}</span></div><div className="price-row"><div><small>All-inclusive retreat</small><strong>{price} <i>/ person</i></strong></div><span>Limited to an intimate circle</span></div><PrimaryButton href="#booking">View retreat & reserve</PrimaryButton></div>
-    </section>
+      <CinematicHero
+        founderName={founder?.name}
+        content={content}
+        backgroundImageUrl={heroMedia?.url ?? mediaSlots.hero}
+      />
 
-    <section className="itinerary-section section" id="itinerary"><SectionContainer className="section-heading compact"><div><SectionLabel>{content.itineraryLabel}</SectionLabel><EditorialHeading>{content.itineraryTitle}<br /><em>{content.itineraryEmphasis}</em></EditorialHeading></div><p>{content.itineraryIntro}</p></SectionContainer><Itinerary items={itinerary} scheduleNote={content.itineraryNote} /></section>
-
-    <section className="founder-section" id="founder"><Fireflies /><div className="founder-copy"><Sparkles size={28} /><SectionLabel className="light">{content.founderLabel}</SectionLabel><EditorialHeading>{content.founderTitle}<br /><em>{content.founderEmphasis}</em></EditorialHeading><QuoteBlock>{founderQuote}</QuoteBlock><p>{founder.name} · {founder.title}</p><SecondaryButton href="#booking" onDark showArrow>Begin your journey</SecondaryButton></div><div className="founder-image"><ResponsiveMedia src={media.founder} alt={founder.name} fallbackTitle={`Meet ${founder.name}`} fallbackHint="Guide image reference not configured" /></div></section>
-
-    {testimonials.length > 0 && (
-      <section className="testimonials-section section" id="testimonials">
-        <SectionContainer className="section-heading compact"><div><SectionLabel>{content.testimonialsLabel}</SectionLabel><EditorialHeading>{content.testimonialsTitle}<br /><em>{content.testimonialsEmphasis}</em></EditorialHeading></div></SectionContainer>
-        <div className="testimonial-grid">
-          {testimonials.map((t, i) => (
-            <QuoteBlock className="testimonial-card" key={i} attribution={<><strong>{t.name}</strong>{t.location && <span>{t.location}</span>}</>}>{t.quote}</QuoteBlock>
-          ))}
+      <section className="manifesto section" id="philosophy">
+        <div><SectionLabel>{content.philosophyLabel}</SectionLabel><span className="botanical" aria-hidden="true">❦</span></div>
+        <div>
+          <EditorialHeading>{content.philosophyTitle}<br /><em>{content.philosophyEmphasis}</em></EditorialHeading>
+          {content.philosophyParagraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+          <SecondaryButton href="#elements" showArrow>{content.philosophyCta}</SecondaryButton>
         </div>
       </section>
-    )}
 
-    <section className="closing" id="booking">
-      <SectionLabel>{content.closingLabel}</SectionLabel>
-      <EditorialHeading>{content.closingTitle}<br /><em>{content.closingEmphasis}</em></EditorialHeading>
-      <p>{content.closingCopy}</p>
-      <BookingForm priceInPaise={retreat.priceInPaise} />
-    </section>
-    <footer><a className="brand footer-brand" href="#top"><BrandLogo tone="light" /></a><p>{content.footerTagline}</p><div><a href="#retreat">Retreats</a><a href="#itinerary">Itinerary</a><a href="#">Instagram</a><a href="#">Contact</a></div><small>© 2026 Bhraman Retreats. All rights reserved.</small></footer>
-  </main>;
+      <section className="elements-section" id="elements">
+        <SectionContainer className="section-heading">
+          <div><SectionLabel>{content.elementsLabel}</SectionLabel><EditorialHeading>{content.elementsTitle}<br /><em>{content.elementsEmphasis}</em></EditorialHeading></div>
+          <p>{content.elementsIntro}</p>
+        </SectionContainer>
+        {elements.length > 0 ? (
+          <SectionContainer className="element-grid">
+            {elements.map((element) => (
+              <article className={`element-card ${element.key}`} key={element.key}>
+                <ElementBadge number={element.symbol} label={element.sanskrit} />
+                <h3>{element.name}</h3><strong>{element.verb}</strong>
+                <div className="element-reveal"><span>{element.practice}</span><p>{element.detail}</p></div>
+              </article>
+            ))}
+          </SectionContainer>
+        ) : (
+          <SectionContainer className="empty-content"><p>The five elemental pathways are being prepared for this journey.</p></SectionContainer>
+        )}
+        {unavailable.includes("settings") && <ContentNotice label="Element details" />}
+      </section>
+
+      <section className="experience-teaser section" id="experience">
+        <SectionContainer>
+          <SectionLabel>{content.experienceLabel}</SectionLabel>
+          <EditorialHeading>{content.experienceTitle}</EditorialHeading>
+          <p>{content.experienceCopy}</p>
+          <SecondaryButton href="#retreat" showArrow>See the next retreat</SecondaryButton>
+        </SectionContainer>
+      </section>
+
+      <section className="retreat-section" id="retreat">
+        {retreat ? (
+          <>
+            <div className="retreat-art">
+              <ResponsiveMedia
+                src={retreat.heroImageUrl ?? retreatMedia?.url ?? mediaSlots.retreat}
+                alt={retreatMedia?.altText ?? retreat.title}
+                fallbackTitle={retreat.title}
+                fallbackHint="Retreat imagery is being prepared"
+                priority
+              />
+              <RetreatDateBadge start={new Date(retreat.startDate)} end={new Date(retreat.endDate)} />
+            </div>
+            <div className="retreat-copy">
+              <SectionLabel>{content.retreatLabel}</SectionLabel>
+              <EditorialHeading>{retreat.title}</EditorialHeading>
+              <p className="lead">{retreat.summary}</p>
+              {retreat.highlight && <p className="retreat-highlight"><Sparkles size={16} aria-hidden="true" /> Highlight · {retreat.highlight}</p>}
+              <div className="retreat-meta">
+                <span><MapPin /> {retreat.location}</span>
+                <span><CalendarDays /> {formatDateRange(new Date(retreat.startDate), new Date(retreat.endDate))}</span>
+              </div>
+              <div className="price-row">
+                <div><small>All-inclusive retreat</small><strong>₹{(retreat.priceInPaise / 100).toLocaleString("en-IN")} <i>/ person</i></strong></div>
+                <span>Limited to an intimate circle</span>
+              </div>
+              <PrimaryButton href="#enquiry">Enquire about this retreat</PrimaryButton>
+            </div>
+          </>
+        ) : (
+          <div className="section-empty-wide">
+            <SectionLabel>{content.retreatLabel}</SectionLabel>
+            <EditorialHeading>The next Bhraman journey is taking shape.</EditorialHeading>
+            <p>Leave an enquiry and we will share the details as soon as they are ready.</p>
+            <PrimaryButton href="#enquiry">Stay informed</PrimaryButton>
+            {unavailable.includes("retreat") && <ContentNotice label="Retreat details" />}
+          </div>
+        )}
+      </section>
+
+      <section className="founder-section" id="founder">
+        <Fireflies />
+        <div className="founder-copy">
+          <Sparkles size={28} />
+          <SectionLabel className="light">{content.founderLabel}</SectionLabel>
+          <EditorialHeading>{content.founderTitle}<br /><em>{content.founderEmphasis}</em></EditorialHeading>
+          {founderQuote && <QuoteBlock attribution={founderQuote.attribution}>{founderQuote.text}</QuoteBlock>}
+          {founder ? (
+            <><p>{founder.name} · {founder.title}</p><SecondaryButton href="#enquiry" onDark showArrow>Begin your journey</SecondaryButton></>
+          ) : (
+            <ContentNotice label="Founder profile" />
+          )}
+        </div>
+        <div className="founder-image">
+          <ResponsiveMedia
+            src={founder?.imageUrl ?? founderMedia?.url ?? mediaSlots.founder}
+            alt={founderMedia?.altText ?? founder?.name ?? "Bhraman retreat guide"}
+            fallbackTitle={founder ? `Meet ${founder.name}` : "Meet your Bhraman guide"}
+            fallbackHint="Founder portrait is being prepared"
+          />
+        </div>
+      </section>
+
+      <section className="itinerary-section section" id="itinerary">
+        <SectionContainer className="section-heading compact">
+          <div><SectionLabel>{content.itineraryLabel}</SectionLabel><EditorialHeading>{content.itineraryTitle}<br /><em>{content.itineraryEmphasis}</em></EditorialHeading></div>
+          <p>{content.itineraryIntro}</p>
+        </SectionContainer>
+        {itinerary.length > 0 ? <Itinerary items={itinerary} scheduleNote={content.itineraryNote} /> : <SectionContainer className="empty-content"><p>The detailed five-day rhythm will appear when the featured retreat itinerary is published.</p></SectionContainer>}
+      </section>
+
+      <section className="memories-section section" id="memories">
+        <SectionContainer className="section-heading compact">
+          <div><SectionLabel>{content.memoriesLabel}</SectionLabel><EditorialHeading>{content.memoriesTitle}</EditorialHeading></div>
+          <p>{content.memoriesCopy}</p>
+        </SectionContainer>
+        {memoryMedia.length > 0 ? (
+          <SectionContainer className="memory-grid">
+            {memoryMedia.map((asset) => <ResponsiveMedia key={asset.id} src={asset.url} alt={asset.altText} fallbackTitle={asset.title ?? "Retreat memory"} />)}
+          </SectionContainer>
+        ) : (
+          <SectionContainer className="empty-content"><p>Previous retreat memories will be shared here after media review.</p></SectionContainer>
+        )}
+      </section>
+
+      <section className="testimonials-section section" id="testimonials">
+        <SectionContainer className="section-heading compact">
+          <div><SectionLabel>{content.testimonialsLabel}</SectionLabel><EditorialHeading>{content.testimonialsTitle}<br /><em>{content.testimonialsEmphasis}</em></EditorialHeading></div>
+        </SectionContainer>
+        {testimonials.length > 0 ? (
+          <div className="testimonial-grid">
+            {testimonials.map((testimonial) => (
+              <QuoteBlock className="testimonial-card" key={testimonial.id} attribution={<><strong>{testimonial.name}</strong>{testimonial.location && <span>{testimonial.location}</span>}</>}>
+                {testimonial.quote}
+              </QuoteBlock>
+            ))}
+          </div>
+        ) : (
+          <SectionContainer className="empty-content"><p>Guest reflections will appear here once they are approved for publication.</p></SectionContainer>
+        )}
+        {unavailable.includes("testimonials") && <ContentNotice label="Guest reflections" />}
+      </section>
+
+      <section className="blog-section section" id="journal">
+        <SectionContainer className="section-heading compact">
+          <div><SectionLabel>{content.blogLabel}</SectionLabel><EditorialHeading>{content.blogTitle}</EditorialHeading></div>
+        </SectionContainer>
+        {blog ? (
+          <SectionContainer className="featured-blog">
+            <ResponsiveMedia src={blog.coverImageUrl ?? blogMedia?.url} alt={blogMedia?.altText ?? blog.title} fallbackTitle={blog.title} fallbackHint="Journal cover is being prepared" />
+            <div><p className="eyebrow">{blog.authorName ?? "Bhraman Retreats"}</p><h3>{blog.title}</h3><p>{blog.excerpt}</p><SecondaryButton href={`/blog/${blog.slug}`} showArrow>Read the journal</SecondaryButton></div>
+          </SectionContainer>
+        ) : (
+          <SectionContainer className="empty-content"><p>The next journal story is being prepared.</p></SectionContainer>
+        )}
+      </section>
+
+      <section className="closing" id="enquiry">
+        <SectionLabel>{content.enquiryLabel}</SectionLabel>
+        <EditorialHeading>{content.enquiryTitle}<br /><em>{content.enquiryEmphasis}</em></EditorialHeading>
+        <p>{content.enquiryCopy}</p>
+        <EnquiryForm retreatId={retreat?.id} />
+      </section>
+
+      <footer>
+        <a className="brand footer-brand" href="#top"><BrandLogo tone="light" /></a>
+        <p>{content.footerTagline}</p>
+        <div><a href="#retreat">Retreats</a><a href="#itinerary">Itinerary</a><a href="#journal">Journal</a><a href="#enquiry">Contact</a></div>
+        <small>© 2026 Bhraman Retreats. All rights reserved.</small>
+      </footer>
+    </main>
+  );
 }
