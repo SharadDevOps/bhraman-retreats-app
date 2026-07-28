@@ -14,6 +14,7 @@ import {
   SectionLabel,
 } from "@/components/design-system";
 import { EnquiryForm } from "@/components/enquiry-form";
+import { ExperienceBhraman } from "@/components/experiences/experience-bhraman";
 import { Itinerary, type ItineraryItem } from "@/components/itinerary";
 import { Fireflies } from "@/components/nature-effects";
 import { ScrollReveal } from "@/components/scroll-reveal";
@@ -94,12 +95,7 @@ export default async function Home() {
       </section>
 
       <section className="experience-teaser section" id="experience">
-        <SectionContainer>
-          <SectionLabel>{content.experienceLabel}</SectionLabel>
-          <EditorialHeading>{content.experienceTitle}</EditorialHeading>
-          <p>{content.experienceCopy}</p>
-          <SecondaryButton href="#retreat" showArrow>See the next retreat</SecondaryButton>
-        </SectionContainer>
+        <ExperienceBhraman label={content.experienceLabel} title={content.experienceTitle} copy={content.experienceCopy} />
       </section>
 
       <section className="retreat-section" id="retreat">

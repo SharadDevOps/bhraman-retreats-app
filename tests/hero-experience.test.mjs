@@ -57,7 +57,7 @@ test("returning visitors receive the shortened complete sequence", () => {
 test("hero CTAs have exact accessible labels and valid in-page destinations", () => {
   assert.equal(hasAccessibleCtas(), true);
   assert.deepEqual(HERO_CTAS.primary, { label: "Explore the Retreat", href: "#retreat" });
-  assert.deepEqual(HERO_CTAS.secondary, { label: "Take a One-Minute Pause", href: "#philosophy" });
+  assert.deepEqual(HERO_CTAS.secondary, { label: "Take a One-Minute Pause", href: "#experience" });
 
   const heroContent = readFileSync(new URL("../src/components/hero/hero-content.tsx", import.meta.url), "utf8");
   assert.match(heroContent, /aria-label=\{HERO_CTAS\.primary\.label\}/);

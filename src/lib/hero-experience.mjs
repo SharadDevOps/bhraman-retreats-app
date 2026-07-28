@@ -32,7 +32,7 @@ export const RETURNING_HERO_TIMELINE = Object.freeze({
 
 export const HERO_CTAS = Object.freeze({
   primary: Object.freeze({ label: "Explore the Retreat", href: "#retreat" }),
-  secondary: Object.freeze({ label: "Take a One-Minute Pause", href: "#philosophy" }),
+  secondary: Object.freeze({ label: "Take a One-Minute Pause", href: "#experience" }),
 });
 
 export function resolveHeroMode({ prefersReducedMotion, hasSeenIntro }) {

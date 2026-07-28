@@ -1,0 +1,15 @@
+export type ElementKey = "earth" | "water" | "fire" | "air" | "space";
+export type ExperienceId = "breathing" | "intention" | "element-reflection" | "daily-pause";
+export const EXPERIENCE_IDS: readonly ExperienceId[];
+export const ELEMENTS: readonly ElementKey[];
+export const BREATHING_PHASES: readonly Readonly<{ id: "inhale" | "hold" | "exhale"; label: string; durationMs: number }>[];
+export const BREATHING_CYCLES: number;
+export const BREATHING_CYCLE_MS: number;
+export const BREATHING_TOTAL_MS: number;
+export const INTENTIONS: readonly Readonly<{ id: string; label: string; element: ElementKey; response: string }>[];
+export const ELEMENT_QUESTIONS: readonly Readonly<{ id: string; prompt: string; options: readonly Readonly<{ id: string; label: string; element: ElementKey }>[] }>[];
+export const ELEMENT_RESULTS: Readonly<Record<ElementKey, Readonly<{ label: string; invitation: string }>>>;
+export const DAILY_PAUSES: readonly Readonly<{ id: string; title: string; activity: string }>[];
+export function getBreathingState(elapsedMs: number): { complete: boolean; phase: string; label: string; cycle: number; remainingMs: number; totalRemainingMs: number; progress: number };
+export function calculateElementResult(answerIds: readonly string[]): null | { element: ElementKey; scores: Record<ElementKey, number>; answered: number; label: string; invitation: string };
+export function getDailyPause(date?: Date | string): Readonly<{ id: string; title: string; activity: string }>;
