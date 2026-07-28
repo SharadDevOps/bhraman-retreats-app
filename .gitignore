@@ -1,6 +1,7 @@
-﻿node_modules/
+node_modules/
 .next/
 .phase*-build*/
+.flyway/
 *.tsbuildinfo
 .env
 .env.local
