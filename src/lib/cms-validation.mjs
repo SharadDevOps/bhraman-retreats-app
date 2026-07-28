@@ -53,9 +53,9 @@ const schemas = {
     dates: ["publishedAt"],
   },
   "media-assets": {
-    required: ["blobName", "url", "altText", "mimeType"],
-    strings: ["blobName", "url", "title", "altText", "caption", "credit", "mimeType", "publicationStatus"],
-    integers: ["width", "height"],
+    required: [],
+    strings: ["title", "altText", "caption", "credit"],
+    integers: ["width", "height", "durationSeconds"],
   },
   "site-settings": {
     required: ["key", "value"],

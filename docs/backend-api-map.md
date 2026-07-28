@@ -229,4 +229,13 @@ Drift:
 - Its description says admin/API-key endpoints are to be added.
 - Actual admin endpoints exist and use a signed cookie rather than API keys.
 - No OpenAPI definitions exist for admin content, upload, login, or booking management.
+## Phase 3 Azure media APIs
 
+Detailed lifecycle, security policy, Azure prerequisites and examples are in
+[`azure-media-management.md`](./azure-media-management.md).
+
+- `POST /api/admin/media/uploads/authorize`
+- `POST /api/admin/media/uploads/confirm`
+- `GET /api/admin/media/assets`
+- `POST /api/admin/media/assets/:id/publish`
+- `GET /api/public/media`

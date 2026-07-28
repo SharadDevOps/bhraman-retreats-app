@@ -128,19 +128,31 @@ model SiteContent {
 }
 
 model MediaAsset {
-  id                String   @id @default(cuid())
-  blobName          String   @unique
+  id                String    @id @default(cuid())
+  blobName          String    @unique
   url               String
+  kind              String    @default("IMAGE")
+  folder            String    @default("legacy")
+  originalFileName  String?
   title             String?
   altText           String
   caption           String?
   credit            String?
   mimeType          String
+  sizeBytes         Int?
   width             Int?
   height            Int?
-  publicationStatus String   @default("DRAFT")
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  durationSeconds   Int?
+  uploadStatus      String    @default("AUTHORIZED")
+  etag              String?
+  publicationStatus String    @default("DRAFT")
+  uploadedAt        DateTime?
+  publishedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([publicationStatus, folder, createdAt])
+  @@index([uploadStatus, createdAt])
 }
 
 model Testimonial {

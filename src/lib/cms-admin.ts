@@ -158,7 +158,7 @@ export function makeAdminWhere(
 }
 
 export function prepareCmsData(entity: string, data: Record<string, unknown>) {
-  const hasPublishedAt = ["retreats", "testimonials", "blogs", "founders", "quotes", "site-settings"].includes(entity);
+  const hasPublishedAt = ["retreats", "testimonials", "blogs", "founders", "quotes", "media-assets", "site-settings"].includes(entity);
   const prepared = hasPublishedAt ? normalizePublication(data) : { ...data };
   if (entity === "enquiries") delete prepared.retreatSlug;
   return prepared;
