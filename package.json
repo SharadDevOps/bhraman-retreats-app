@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "db:seed": "prisma db seed",
+    "db:migrations:check": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/check-db-migrations.ps1",
     "test:cms": "node --test tests/cms-*.test.mjs"
   },
   "prisma": {
