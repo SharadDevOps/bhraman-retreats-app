@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const SELECTORS = ".manifesto,.elements-section,.retreat-section,.itinerary-section,.founder-section,.testimonials-section,.closing";
+const SELECTORS = ".manifesto,.elements-section,.experience-teaser,.retreat-section,.founder-section,.itinerary-section,.memories-section,.testimonials-section,.blog-section,.closing";
 
 export function ScrollReveal() {
   useEffect(() => {

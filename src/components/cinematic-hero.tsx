@@ -33,9 +33,11 @@ const easeInOut = (value: number) => value < 0.5
 export function CinematicHero({
   founderName = "Dr. Pratiksha Shekhawat",
   content,
+  backgroundImageUrl,
 }: {
   founderName?: string;
   content: HomeContent;
+  backgroundImageUrl?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const heroRef = useRef<HTMLElement>(null);
@@ -280,7 +282,12 @@ export function CinematicHero({
   };
 
   return (
-    <section ref={heroRef} className={skipped ? "hero intro-skipped" : "hero"} aria-label="Bhraman Retreats introduction">
+    <section
+      ref={heroRef}
+      className={skipped ? "hero intro-skipped" : "hero"}
+      aria-label="Bhraman Retreats introduction"
+      style={backgroundImageUrl ? { "--hero-image": `url("${backgroundImageUrl.replaceAll('"', "%22")}")` } as React.CSSProperties : undefined}
+    >
       <div className="hero-background" aria-hidden="true" />
       <div className="hero-vignette" aria-hidden="true" />
       <canvas ref={canvasRef} className="om-particles" aria-hidden="true" />
