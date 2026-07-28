@@ -10,7 +10,8 @@
     "db:seed": "prisma db seed",
     "test:cms": "node --test tests/cms-*.test.mjs",
     "test:media": "node --test tests/media-*.test.mjs",
-    "test:homepage": "node --test tests/homepage-content.test.mjs"
+    "test:homepage": "node --test tests/homepage-content.test.mjs",
+    "test:hero": "node --test tests/hero-experience.test.mjs"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"
