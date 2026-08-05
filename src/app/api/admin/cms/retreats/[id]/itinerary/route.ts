@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { apiError, apiSuccess, handleApiError, validationError } from "@/lib/api-response";
 import { getAdminSession } from "@/lib/admin-auth";
 import { isRoleAllowed, validateCmsEntity } from "@/lib/cms-validation.mjs";
+import * as Prisma from "@prisma/client";
 
 type NestedActivity = Record<string, unknown>;
 type NestedSection = Record<string, unknown> & { activities?: NestedActivity[] };
@@ -67,7 +68,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     const exists = await prisma.retreat.findUnique({ where: { id }, select: { id: true } });
     if (!exists) return apiError(404, "NOT_FOUND", "Retreat not found.");
 
-    const itinerary = await prisma.$transaction(async (tx) => {
+    const itinerary = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.retreatDay.deleteMany({ where: { retreatId: id } });
       for (const day of days) {
         await tx.retreatDay.create({

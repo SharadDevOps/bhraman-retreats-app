@@ -38,6 +38,30 @@ export const retreatCatalog: readonly RetreatDefinition[] = [
     priceInPaise: 2999900,
     capacity: 12,
   },
+  {
+    slug: "rishikesh-retreat-dec-2026",
+    title: "Rishikesh Edition",
+    edition: "Edition 2.0",
+    summary: "Rishikesh Retreat",
+    description: "Rishikesh Retreat",
+    location: "Rishikesh, Uttarakhand",
+    startDate: "2026-12-12T00:00:00.000Z",
+    endDate: "2026-12-18T00:00:00.000Z",
+    priceInPaise: 2999900,
+    capacity: 10,
+  },
+  {
+    slug: "ladakh-edition-2-sep-2026-b",
+    title: "Ladakh Edition 2.0",
+    edition: "Edition 2.0",
+    summary: "Ladakh Retreat",
+    description: "Ladakh Retreat",
+    location: "Sham Valley, Ladakh",
+    startDate: "2026-09-12T00:00:00.000Z",
+    endDate: "2026-09-18T00:00:00.000Z",
+    priceInPaise: 2999900,
+    capacity: 10,
+  }
 ] as const;
 
 type DatedRetreat = { startDate: string | Date; endDate: string | Date };
