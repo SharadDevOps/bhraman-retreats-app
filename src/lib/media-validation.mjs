@@ -20,6 +20,7 @@ export const MEDIA_FOLDERS = Object.freeze([
   "founder/profile",
   "founder/journey",
   "founder/videos",
+  "site/hero",
   "blog/why-choose-bhraman/cover",
   "blog/why-choose-bhraman/inline",
   "audio/ambient",
