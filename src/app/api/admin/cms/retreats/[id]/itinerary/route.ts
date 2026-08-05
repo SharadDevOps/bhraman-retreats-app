@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { apiError, apiSuccess, handleApiError, validationError } from "@/lib/api-response";
 import { getAdminSession } from "@/lib/admin-auth";
 import { isRoleAllowed, validateCmsEntity } from "@/lib/cms-validation.mjs";
-import * as Prisma from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 type NestedActivity = Record<string, unknown>;
 type NestedSection = Record<string, unknown> & { activities?: NestedActivity[] };
