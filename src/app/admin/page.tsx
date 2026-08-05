@@ -29,7 +29,7 @@ export default function AdminPage() {
   const [retreat, setRetreat] = useState<RetreatContent | null>(null);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [media, setMedia] = useState<Media>({});
-  const [pendingMedia, setPendingMedia] = useState<Partial<Record<"retreat" | "founder", PendingMedia>>>({});
+  const [pendingMedia, setPendingMedia] = useState<Partial<Record<"retreat" | "founder" | "hero", PendingMedia>>>({});
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -89,17 +89,22 @@ export default function AdminPage() {
     flash(okMsg);
   }
 
-  function mediaFolderFor(slot: "retreat" | "founder") {
+  function mediaFolderFor(slot: "retreat" | "founder" | "hero") {
     if (slot === "founder") return "founder/profile";
+    if (slot === "hero") return "site/hero";
     if (retreat?.slug.includes("uttarakhand")) return "retreats/uttarakhand-december/cover";
     if (retreat?.slug.includes("edition-1")) return "retreats/ladakh-edition-1/cover";
     return "retreats/ladakh-edition-2/cover";
   }
 
-  async function uploadImage(slot: "retreat" | "founder", file: File) {
+  async function uploadImage(slot: "retreat" | "founder" | "hero", file: File) {
     setBusy(true); setError(null);
     try {
-      const label = slot === "founder" ? "Bhraman founder portrait" : `${retreat?.title ?? "Bhraman retreat"} cover`;
+      const label = slot === "founder"
+        ? "Bhraman founder portrait"
+        : slot === "hero"
+          ? "Bhraman homepage hero"
+          : `${retreat?.title ?? "Bhraman retreat"} cover`;
       const asset = await uploadMediaForReview(file, {
         folder: mediaFolderFor(slot),
         altText: label,
@@ -115,7 +120,7 @@ export default function AdminPage() {
     }
   }
 
-  async function publishImage(slot: "retreat" | "founder") {
+  async function publishImage(slot: "retreat" | "founder" | "hero") {
     const pending = pendingMedia[slot];
     if (!pending) return;
     setBusy(true); setError(null);
@@ -207,7 +212,7 @@ export default function AdminPage() {
         <div className="admin-card">
           <h2>Site images</h2>
           <div className="admin-images">
-            {([["retreat", "Retreat image"], ["founder", "Founder portrait"]] as const).map(([slot, label]) => (
+            {([["hero", "Hero / homepage background"], ["retreat", "Retreat image"], ["founder", "Founder portrait"]] as const).map(([slot, label]) => (
               <div className="admin-image-slot" key={slot}>
                 <h3>{label}</h3>
                 {media[slot] ? <img src={media[slot]} alt={label} /> : <div className="admin-image-empty">No image yet</div>}
