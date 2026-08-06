@@ -230,7 +230,7 @@ export default async function Home() {
         <EnquiryForm retreatId={retreat?.id} />
       </section>
 
-      <footer>
+      <footer className="site-footer">
         <a className="brand footer-brand" href="#top"><BrandLogo tone="light" /></a>
         <p>{content.footerTagline}</p>
         <div><a href="#retreat">Retreats</a><a href="#itinerary">Itinerary</a><a href="#journal">Journal</a><a href="#enquiry">Contact</a></div>

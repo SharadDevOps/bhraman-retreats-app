@@ -133,6 +133,26 @@ export default function AdminPage() {
     }
   }
 
+  async function uploadPortrait(file: File, index: number) {
+    setBusy(true); setError(null);
+    try {
+      const name = testimonials[index]?.name || "guest";
+      const label = `${name} portrait`;
+      const asset = await uploadMediaForReview(file, {
+        folder: "testimonials",
+        altText: label,
+        title: label,
+      });
+      await publishMediaAsset(asset.id);
+      setTestimonials((current) => current.map((x, j) => j === index ? { ...x, imageUrl: asset.url } : x));
+      flash("Portrait image uploaded. Save testimonials to apply it.");
+    } catch (uploadError) {
+      fail(uploadError instanceof Error ? uploadError.message : "Image upload failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function publishImage(slot: "retreat" | "founder" | "hero") {
     const pending = pendingMedia[slot];
     if (!pending) return;
@@ -216,18 +236,35 @@ export default function AdminPage() {
                 <label>Name<input value={t.name} onChange={(e) => setTestimonials(testimonials.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} /></label>
                 <label>Location<input value={t.location} onChange={(e) => setTestimonials(testimonials.map((x, j) => j === i ? { ...x, location: e.target.value } : x))} /></label>
               </div>
-              <label>
-                Portrait photo URL
-                <input
-                  value={t.imageUrl}
-                  placeholder="https://... (optional — paste a direct image link)"
-                  onChange={(e) => setTestimonials(testimonials.map((x, j) => j === i ? { ...x, imageUrl: e.target.value } : x))}
-                />
-              </label>
-              {t.imageUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={t.imageUrl} alt={t.name} className="admin-portrait-preview" />
-              )}
+              <div style={{ display: "flex", gap: "16px", alignItems: "flex-end", flexWrap: "wrap" }}>
+                <div style={{ flex: 1, display: "flex", gap: "16px", alignItems: "flex-end", minWidth: "280px" }}>
+                  {t.imageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={t.imageUrl} alt={t.name} className="admin-portrait-preview" style={{ flexShrink: 0, marginBottom: "2px" }} />
+                  )}
+                  <label style={{ flex: 1 }}>
+                    Portrait photo URL
+                    <input
+                      value={t.imageUrl}
+                      placeholder="https://... (or upload using the button on the right)"
+                      onChange={(e) => setTestimonials(testimonials.map((x, j) => j === i ? { ...x, imageUrl: e.target.value } : x))}
+                    />
+                  </label>
+                </div>
+                <label className="admin-upload" style={{ marginBottom: "2px", height: "42px", display: "inline-flex", alignItems: "center", justifySelf: "stretch" }}>
+                  <Upload size={13} /> Upload photo
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/avif"
+                    hidden
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) uploadPortrait(file, i);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              </div>
               <label>Quote<textarea rows={3} value={t.quote} onChange={(e) => setTestimonials(testimonials.map((x, j) => j === i ? { ...x, quote: e.target.value } : x))} /></label>
               <button type="button" className="admin-delete" onClick={() => setTestimonials(testimonials.filter((_, j) => j !== i))}><Trash2 size={14} /> Remove</button>
             </div>

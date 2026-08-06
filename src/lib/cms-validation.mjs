@@ -6,7 +6,7 @@ export const ADMIN_ROLES = ["CONTENT_EDITOR", "BOOKING_MANAGER", "SUPER_ADMIN"];
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const dangerousKeyPattern = /(secret|password|token|private.?key|connection.?string|api.?key)/i;
-const richFields = new Set(["description", "content", "bio", "quote", "text", "message", "caption"]);
+const richFields = new Set(["description", "content", "bio", "quote", "text", "message", "caption", "summary"]);
 
 const schemas = {
   retreats: {
@@ -32,7 +32,7 @@ const schemas = {
   },
   testimonials: {
     required: ["slug", "name", "quote"],
-    strings: ["slug", "name", "location", "quote", "publicationStatus"],
+    strings: ["slug", "name", "location", "quote", "publicationStatus", "imageUrl"],
     integers: ["sortOrder"],
     dates: ["publishedAt"],
   },

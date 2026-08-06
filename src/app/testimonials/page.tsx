@@ -154,7 +154,6 @@ export default async function TestimonialsPage() {
                       <span className="tv-card-loc">{t.location}</span>
                     )}
                   </div>
-                  <StarRating />
                 </footer>
               </article>
             ))}
