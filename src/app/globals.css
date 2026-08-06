@@ -1892,3 +1892,112 @@ footer.site-footer > small {
   .experience-active, .experience-menu button, .experience-options button, .question-progress i, .breathing-visual { animation: none; transition: none; transform: none; }
 }
 
+/* Crop Modal Styles */
+.crop-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 18, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.crop-modal-content {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 32px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--line);
+}
+.crop-modal-content h3 {
+  margin: 0 0 8px;
+  font: 300 24px/1.2 var(--font-display);
+  color: var(--ink);
+}
+.crop-container {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  margin: 24px auto;
+  background: #0b130e;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+}
+.crop-container img {
+  max-width: none;
+  max-height: none;
+  display: block;
+  user-select: none;
+}
+.crop-circle-overlay {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 200px;
+  height: 200px;
+  border: 2px solid var(--white);
+  border-radius: 50%;
+  z-index: 10;
+  box-shadow: 0 0 0 9999px rgba(11, 19, 14, 0.6);
+  pointer-events: none;
+}
+.crop-slider-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.crop-slider-container input[type="range"] {
+  width: 180px;
+  accent-color: var(--fire);
+  cursor: pointer;
+}
+.crop-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+}
+.crop-actions button {
+  padding: 10px 24px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.crop-actions .button-cancel {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+.crop-actions .button-cancel:hover {
+  background: var(--surface-warm);
+}
+.crop-actions .button-crop {
+  background: var(--fire);
+  border: 1px solid var(--fire);
+  color: var(--white);
+}
+.crop-actions .button-crop:hover {
+  background: var(--earth);
+  border-color: var(--earth);
+}
+

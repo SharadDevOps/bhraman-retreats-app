@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Loader2, LogOut, Plus, Trash2, Upload, Youtube } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
@@ -33,6 +33,164 @@ function youtubeEmbedUrl(url: string): string {
   } catch { return url; }
 }
 
+interface CropModalProps {
+  imageUrl: string;
+  onCancel: () => void;
+  onApply: (croppedBlob: Blob) => void;
+}
+
+function CropModal({ imageUrl, onCancel, onApply }: CropModalProps) {
+  const [zoom, setZoom] = useState(1.0);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    setZoom(1.0);
+    setOffset({ x: 0, y: 0 });
+  }, [imageUrl]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setOffset({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y,
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length !== 1) return;
+    setIsDragging(true);
+    const touch = e.touches[0];
+    setDragStart({ x: touch.clientX - offset.x, y: touch.clientY - offset.y });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    setOffset({
+      x: touch.clientX - dragStart.x,
+      y: touch.clientY - dragStart.y,
+    });
+  };
+
+  const handleApply = () => {
+    const img = imageRef.current;
+    const container = containerRef.current;
+    if (!img || !container) return;
+
+    const outputSize = 300; 
+    const canvas = document.createElement("canvas");
+    canvas.width = outputSize;
+    canvas.height = outputSize;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, outputSize, outputSize);
+    ctx.beginPath();
+    ctx.arc(outputSize / 2, outputSize / 2, outputSize / 2, 0, Math.PI * 2);
+    ctx.clip();
+
+    const cropWindowSize = 200; 
+    const nw = img.naturalWidth;
+    const nh = img.naturalHeight;
+    const aspect = nw / nh;
+    let dw = 200;
+    let dh = 200;
+    if (aspect > 1) {
+      dh = cropWindowSize;
+      dw = cropWindowSize * aspect;
+    } else {
+      dw = cropWindowSize;
+      dh = cropWindowSize / aspect;
+    }
+
+    const zw = dw * zoom;
+    const zh = dh * zoom;
+
+    const imgLeft = (cropWindowSize - zw) / 2 + offset.x;
+    const imgTop = (cropWindowSize - zh) / 2 + offset.y;
+
+    const scaleX = nw / zw;
+    const scaleY = nh / zh;
+
+    const sx = -imgLeft * scaleX;
+    const sy = -imgTop * scaleY;
+    const sWidth = cropWindowSize * scaleX;
+    const sHeight = cropWindowSize * scaleY;
+
+    ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, outputSize, outputSize);
+
+    canvas.toBlob((blob) => {
+      if (blob) onApply(blob);
+    }, "image/png");
+  };
+
+  return (
+    <div className="crop-modal-overlay">
+      <div className="crop-modal-content">
+        <h3>Crop Profile Picture</h3>
+        <p className="admin-note" style={{ marginBottom: "16px" }}>Drag the image to position, and use the slider to zoom.</p>
+        
+        <div 
+          className="crop-container" 
+          ref={containerRef}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleMouseUp}
+        >
+          <div className="crop-circle-overlay" />
+          
+          <img
+            src={imageUrl}
+            alt="To crop"
+            ref={imageRef}
+            style={{
+              transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+              cursor: isDragging ? "grabbing" : "grab",
+              touchAction: "none",
+            }}
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
+            draggable={false}
+          />
+        </div>
+
+        <div className="crop-slider-container">
+          <span>Zoom:</span>
+          <input
+            type="range"
+            min="1"
+            max="3"
+            step="0.05"
+            value={zoom}
+            onChange={(e) => setZoom(parseFloat(e.target.value))}
+          />
+        </div>
+
+        <div className="crop-actions">
+          <button type="button" className="button-cancel" onClick={onCancel}>Cancel</button>
+          <button type="button" className="button-crop" onClick={handleApply}>Crop &amp; Upload</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [password, setPassword] = useState("");
@@ -43,6 +201,7 @@ export default function AdminPage() {
   const [media, setMedia] = useState<Media>({});
   const [pendingMedia, setPendingMedia] = useState<Partial<Record<"retreat" | "founder" | "hero" | "bg.upcoming-retreats" | "bg.testimonials", PendingMedia>>>({});
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [cropTarget, setCropTarget] = useState<{ file: File; testimonialIndex: number; imageUrl: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -267,7 +426,19 @@ export default function AdminPage() {
                     hidden
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      if (file) uploadPortrait(file, i);
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          if (typeof event.target?.result === "string") {
+                            setCropTarget({
+                              file,
+                              testimonialIndex: i,
+                              imageUrl: event.target.result,
+                            });
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
                       e.target.value = "";
                     }}
                   />
@@ -394,6 +565,24 @@ export default function AdminPage() {
             ))}
           </div>
         </div>
+      )}
+      {cropTarget && (
+        <CropModal
+          imageUrl={cropTarget.imageUrl}
+          onCancel={() => setCropTarget(null)}
+          onApply={async (blob) => {
+            const index = cropTarget.testimonialIndex;
+            const file = cropTarget.file;
+            setCropTarget(null);
+            
+            const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf(".")) || file.name;
+            const croppedFile = new File([blob], `${nameWithoutExt}-circle.png`, {
+              type: "image/png",
+            });
+            
+            await uploadPortrait(croppedFile, index);
+          }}
+        />
       )}
     </main>
   );
