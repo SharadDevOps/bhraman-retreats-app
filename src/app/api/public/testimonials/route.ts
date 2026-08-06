@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     const [items, total] = await prisma.$transaction([
       prisma.testimonial.findMany({
         where,
-        select: { id: true, slug: true, name: true, location: true, quote: true, sortOrder: true },
+        select: { id: true, slug: true, name: true, location: true, imageUrl: true, quote: true, sortOrder: true },
         skip: query.skip,
         take: query.pageSize,
         orderBy: { [query.sort]: query.order },
