@@ -4,9 +4,9 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hasAdminRole } from "@/lib/admin-auth";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api-response";
-import { getMediaBlobProperties } from "@/lib/azure-storage";
+import { getMediaBlobProperties, isBlobConfigured } from "@/lib/azure-storage";
 
-const SITE_SLOTS = new Set(["retreat", "founder", "hero"]);
+const SITE_SLOTS = new Set(["retreat", "founder", "hero", "bg.upcoming-retreats", "bg.testimonials"]);
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   if (!(await hasAdminRole(["CONTENT_EDITOR", "SUPER_ADMIN"]))) {
@@ -17,7 +17,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const body = await request.json().catch(() => ({}));
   const slot = typeof body.slot === "string" && body.slot ? body.slot : null;
   if (slot && !SITE_SLOTS.has(slot)) {
-    return apiError(422, "VALIDATION_ERROR", "slot must be retreat, founder or hero.");
+    return apiError(422, "VALIDATION_ERROR", "slot must be retreat, founder, hero, bg.upcoming-retreats or bg.testimonials.");
   }
 
   try {
@@ -27,7 +27,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       return apiError(409, "UPLOAD_NOT_CONFIRMED", "Confirm the Blob upload before publishing.");
     }
 
-    const isLocal = asset.blobName.startsWith("local-fallback/");
+    const isLocal = !isBlobConfigured();
     if (isLocal) {
       const relativePath = asset.url.replace(/^\//, "");
       const absolutePath = path.join(process.cwd(), "public", relativePath);

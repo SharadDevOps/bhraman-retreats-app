@@ -74,13 +74,19 @@ function YoutubeShortCard({ video, index }: { video: VideoEntry; index: number }
 }
 
 export default async function TestimonialsPage() {
-  const { testimonials, videos } = await getTestimonialsPageData(await origin());
+  const { testimonials, videos, mediaSlots } = await getTestimonialsPageData(await origin());
+  const bgUrl = mediaSlots["bg.testimonials"];
 
   return (
     <main className="tv-page">
 
       {/* ── HERO ── */}
-      <section className="tv-hero">
+      <section
+        className="tv-hero"
+        style={bgUrl ? {
+          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,.45) 0%, rgba(10,30,10,.75) 100%), url('${bgUrl}')`
+        } : undefined}
+      >
         <div className="tv-hero-overlay" aria-hidden="true" />
         <div className="tv-hero-body">
           <SectionLabel className="light">Voices from the journey</SectionLabel>
