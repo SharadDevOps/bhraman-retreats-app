@@ -1150,7 +1150,7 @@ body { padding-top: 0; }
   border: 1px solid var(--line);
   background: var(--white);
 }
-.testimonial-card::before { content: "â€œ"; color: var(--water); font: 66px/.7 var(--font-display); opacity: .55; }
+.testimonial-card::before { content: "\201C"; color: var(--water); font: 66px/.7 var(--font-display); opacity: .55; }
 .testimonial-card blockquote { margin: 0; color: var(--ink); font: italic 20px/1.6 var(--font-display); }
 .testimonial-card figcaption strong { display: block; font: 600 16px var(--font-display); }
 .testimonial-card figcaption span { color: #8a8178; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; }
