@@ -800,11 +800,11 @@ body { padding-top: 0; }
   animation: tv-card-rise .45s var(--ease) both;
   animation-delay: calc(var(--si, 0) * 70ms);
 }
-/* 9:16 portrait Shorts frame — clips height on desktop via max-height */
 .tv-short-frame {
   position: relative;
   aspect-ratio: 9 / 16;
-  max-height: 440px;        /* prevents absurdly tall frames on wide screens */
+  width: 247.5px;
+  max-width: 100%;
   border-radius: 10px;
   overflow: hidden;
   background: var(--paper);
@@ -999,12 +999,12 @@ body { padding-top: 0; }
 @media (max-width: 1100px) { .tv-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 860px)  {
   .tv-shorts-grid { grid-template-columns: repeat(2, auto); }
-  .tv-short-frame { max-height: 380px; }
+  .tv-short-frame { width: 213.75px; }
 }
 @media (max-width: 640px)  {
   .tv-grid { grid-template-columns: 1fr; }
   .tv-shorts-grid { grid-template-columns: repeat(2, auto); }
-  .tv-short-frame { max-height: 320px; }
+  .tv-short-frame { width: 180px; }
   .tv-card-foot { flex-wrap: wrap; }
   .tv-hero { min-height: 60vh; }
   .tv-cta-row { flex-direction: column; }
