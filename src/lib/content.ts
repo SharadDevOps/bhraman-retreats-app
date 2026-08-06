@@ -316,6 +316,7 @@ export type VideoEntry = {
 export type TestimonialsPageData = {
   testimonials: TestimonialContent[];
   videos: VideoEntry[];
+  mediaSlots: Record<string, string>;
 };
 
 export async function getTestimonialsPageData(origin: string): Promise<TestimonialsPageData> {
@@ -328,11 +329,16 @@ export async function getTestimonialsPageData(origin: string): Promise<Testimoni
     ? (settings.value.data as Record<string, unknown>)?.["testimonials.videos"]
     : null;
 
+  const mediaSlotsRaw = settings.status === "fulfilled"
+    ? (settings.value.data as Record<string, unknown>)?.["media.slots"]
+    : null;
+
   return {
     testimonials: testimonials.status === "fulfilled" ? testimonials.value.data : [],
     videos: Array.isArray(rawVideos)
       ? (rawVideos as VideoEntry[]).filter((v) => typeof v?.url === "string" && v.url.trim())
       : [],
+    mediaSlots: mapMediaSlots(mediaSlotsRaw),
   };
 }
 

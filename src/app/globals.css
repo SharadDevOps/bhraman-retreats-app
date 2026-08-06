@@ -689,6 +689,26 @@ body { padding-top: 0; }
 .retreats-scroll-cue { display: inline-flex; align-items: center; gap: 9px; margin-top: 14px; color: var(--text-muted); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
 .retreats-scroll-cue:hover { color: var(--fire); }
 
+/* Overrides for retreats-hero when a dynamic background image is applied */
+.retreats-hero.has-bg {
+  color: var(--white);
+}
+.retreats-hero.has-bg .eyebrow {
+  color: var(--gold);
+}
+.retreats-hero.has-bg .retreats-hero-title em {
+  color: var(--gold);
+}
+.retreats-hero.has-bg p {
+  color: rgba(255, 255, 255, 0.85);
+}
+.retreats-hero.has-bg .retreats-scroll-cue {
+  color: rgba(255, 255, 255, 0.7);
+}
+.retreats-hero.has-bg .retreats-scroll-cue:hover {
+  color: var(--white);
+}
+
 .retreats-list { width: min(1120px, calc(100% - 48px)); margin: 0 auto; padding: clamp(56px, 7vw, 92px) 0 clamp(72px, 9vw, 120px); display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; }
 .retreats-list .upcoming-card { background: var(--white); }
 .retreats-list .is-lead { grid-column: 1 / -1; }

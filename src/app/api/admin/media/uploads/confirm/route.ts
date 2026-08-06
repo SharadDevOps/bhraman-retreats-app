@@ -3,7 +3,7 @@ import path from "path";
 import { prisma } from "@/lib/prisma";
 import { hasAdminRole } from "@/lib/admin-auth";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api-response";
-import { deleteMediaBlobIfExists, getMediaBlobProperties } from "@/lib/azure-storage";
+import { deleteMediaBlobIfExists, getMediaBlobProperties, isBlobConfigured } from "@/lib/azure-storage";
 
 export const runtime = "nodejs";
 
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       return apiError(409, "INVALID_UPLOAD_STATE", "This upload is not awaiting confirmation.");
     }
 
-    const isLocal = asset.blobName.startsWith("local-fallback/");
+    const isLocal = !isBlobConfigured();
     let properties;
 
     if (isLocal) {

@@ -37,11 +37,31 @@ async function origin() {
 }
 
 export default async function UpcomingRetreatsPage() {
-  const retreats = await getUpcomingRetreats(await origin());
+  const currentOrigin = await origin();
+  const retreats = await getUpcomingRetreats(currentOrigin);
+
+  let bgUrl = "";
+  try {
+    const settingsResponse = await fetch(`${currentOrigin}/api/public/site-settings`, { cache: "no-store" });
+    if (settingsResponse.ok) {
+      const settings = (await settingsResponse.json()).data ?? {};
+      const slots = settings["media.slots"] ?? {};
+      bgUrl = slots["bg.upcoming-retreats"] ?? "";
+    }
+  } catch (err) {
+    console.error("Failed to load upcoming retreats page background:", err);
+  }
 
   return (
     <main className="retreats-page">
-      <section className="retreats-hero">
+      <section
+        className={`retreats-hero${bgUrl ? " has-bg" : ""}`}
+        style={bgUrl ? {
+          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,.45) 0%, rgba(10,30,10,.75) 100%), url('${bgUrl}')`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        } : undefined}
+      >
         <SectionLabel className="light">Bhraman journeys</SectionLabel>
         <h1 className="retreats-hero-title">Upcoming <em>Retreats</em></h1>
         <p>Three intimate journeys through the Himalayas. Choose the one that calls to you — the soonest departure leads, with more to follow.</p>

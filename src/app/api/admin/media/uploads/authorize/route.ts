@@ -21,11 +21,29 @@ export async function POST(request: Request) {
     if (!validation.valid) return validationError(validation.errors);
 
     const metadata = validation.value;
-    const localFileName = `local-${randomUUID()}-${metadata.safeFileName}`;
-    const blobName = `local-fallback/${metadata.folder}/${localFileName}`;
-    const publicUrl = `/uploads/${metadata.folder}/${localFileName}`;
+    let isBg = false;
+    let localFileName: string;
+    let blobName: string;
+    let publicUrl: string;
+
+    if (metadata.folder.startsWith("images/background/")) {
+      isBg = true;
+      const pageKey = metadata.folder.split("/").pop();
+      const extension = metadata.fileName.split(".").pop()?.toLowerCase() || "jpg";
+      const cleanFileName = `${pageKey}.${extension}`;
+      localFileName = cleanFileName;
+      blobName = `images/background/${cleanFileName}`;
+      publicUrl = `/uploads/images/background/${cleanFileName}`;
+    } else {
+      localFileName = `local-${randomUUID()}-${metadata.safeFileName}`;
+      blobName = `local-fallback/${metadata.folder}/${localFileName}`;
+      publicUrl = `/uploads/${metadata.folder}/${localFileName}`;
+    }
 
     try {
+      if (isBg) {
+        await prisma.mediaAsset.deleteMany({ where: { blobName } });
+      }
       const asset = await prisma.mediaAsset.create({
         data: {
           blobName,
@@ -77,9 +95,23 @@ export async function POST(request: Request) {
   if (!validation.valid) return validationError(validation.errors);
 
   const metadata = validation.value;
-  const blobName = `${getMediaRootPrefix()}/${metadata.folder}/${randomUUID()}-${metadata.safeFileName}`;
+  let isBg = false;
+  let blobName: string;
+
+  if (metadata.folder.startsWith("images/background/")) {
+    isBg = true;
+    const pageKey = metadata.folder.split("/").pop();
+    const extension = metadata.fileName.split(".").pop()?.toLowerCase() || "jpg";
+    const cleanFileName = `${pageKey}.${extension}`;
+    blobName = `images/background/${cleanFileName}`;
+  } else {
+    blobName = `${getMediaRootPrefix()}/${metadata.folder}/${randomUUID()}-${metadata.safeFileName}`;
+  }
 
   try {
+    if (isBg) {
+      await prisma.mediaAsset.deleteMany({ where: { blobName } });
+    }
     const authorization = await createDirectMediaUpload(blobName);
     const asset = await prisma.mediaAsset.create({
       data: {

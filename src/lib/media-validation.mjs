@@ -1,4 +1,6 @@
 export const MEDIA_FOLDERS = Object.freeze([
+  "images/background/upcoming-retreats",
+  "images/background/testimonials",
   "retreats/ladakh-edition-1/cover",
   "retreats/ladakh-edition-1/gallery",
   "retreats/ladakh-edition-1/videos",
