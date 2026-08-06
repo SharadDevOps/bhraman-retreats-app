@@ -35,7 +35,10 @@ export default async function Home() {
   const host = incomingHeaders.get("x-forwarded-host") ?? incomingHeaders.get("host") ?? "localhost:3000";
   const protocol = incomingHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const data = await getHomepageData(`${protocol}://${host}`);
-  const { content, retreat, founder, elements, testimonials, blog, quotes, media, mediaSlots, unavailable } = data;
+  const { content, retreat, upcomingRetreats, founder, elements, testimonials, blog, quotes, media, mediaSlots, unavailable } = data;
+
+  // The soonest upcoming retreat is featured large above; show up to two more as cards.
+  const moreRetreats = upcomingRetreats.filter((item) => item.slug !== retreat?.slug).slice(0, 2);
 
   const itinerary: ItineraryItem[] = (retreat?.itinerary ?? []).map((day) => ({
     day: `Day ${day.dayNumber}`,
@@ -124,7 +127,12 @@ export default async function Home() {
                 <div><small>All-inclusive retreat</small><strong>₹{(retreat.priceInPaise / 100).toLocaleString("en-IN")} <i>/ person</i></strong></div>
                 <span>Limited to an intimate circle</span>
               </div>
-              <PrimaryButton href="#enquiry">Enquire about this retreat</PrimaryButton>
+              <div className="retreat-cta-row">
+                <PrimaryButton href="#enquiry">Enquire about this retreat</PrimaryButton>
+                {moreRetreats.length > 0 && (
+                  <SecondaryButton href="/upcoming-retreats" showArrow>See all upcoming retreats</SecondaryButton>
+                )}
+              </div>
             </div>
           </>
         ) : (

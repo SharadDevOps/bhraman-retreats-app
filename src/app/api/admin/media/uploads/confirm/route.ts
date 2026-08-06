@@ -1,3 +1,5 @@
+import { promises as fs } from "fs";
+import path from "path";
 import { prisma } from "@/lib/prisma";
 import { hasAdminRole } from "@/lib/admin-auth";
 import { apiError, apiSuccess, handleApiError } from "@/lib/api-response";
@@ -21,14 +23,32 @@ export async function POST(request: Request) {
       return apiError(409, "INVALID_UPLOAD_STATE", "This upload is not awaiting confirmation.");
     }
 
+    const isLocal = asset.blobName.startsWith("local-fallback/");
     let properties;
-    try {
-      properties = await getMediaBlobProperties(asset.blobName);
-    } catch (error) {
-      if ((error as { statusCode?: number }).statusCode === 404) {
-        return apiError(409, "BLOB_NOT_FOUND", "The browser upload has not completed.");
+
+    if (isLocal) {
+      const relativePath = asset.url.replace(/^\//, "");
+      const absolutePath = path.join(process.cwd(), "public", relativePath);
+      try {
+        const stats = await fs.stat(absolutePath);
+        properties = {
+          contentType: asset.mimeType,
+          contentLength: stats.size,
+          blobType: "BlockBlob",
+          etag: asset.etag || `local-${stats.mtimeMs}`,
+        };
+      } catch (error) {
+        return apiError(409, "BLOB_NOT_FOUND", "The local file upload has not completed.");
       }
-      throw error;
+    } else {
+      try {
+        properties = await getMediaBlobProperties(asset.blobName);
+      } catch (error) {
+        if ((error as { statusCode?: number }).statusCode === 404) {
+          return apiError(409, "BLOB_NOT_FOUND", "The browser upload has not completed.");
+        }
+        throw error;
+      }
     }
 
     const actualType = properties.contentType?.split(";", 1)[0]?.trim().toLowerCase() ?? "";
@@ -38,12 +58,18 @@ export async function POST(request: Request) {
       && actualType === asset.mimeType.toLowerCase();
 
     if (!metadataMatches) {
-      await deleteMediaBlobIfExists(asset.blobName);
+      if (isLocal) {
+        const relativePath = asset.url.replace(/^\//, "");
+        const absolutePath = path.join(process.cwd(), "public", relativePath);
+        await fs.unlink(absolutePath).catch(() => null);
+      } else {
+        await deleteMediaBlobIfExists(asset.blobName);
+      }
       await prisma.mediaAsset.update({
         where: { id: asset.id },
         data: { uploadStatus: "REJECTED" },
       });
-      return apiError(422, "UPLOAD_MISMATCH", "Uploaded blob metadata did not match the authorization request.");
+      return apiError(422, "UPLOAD_MISMATCH", "Uploaded file metadata did not match the authorization request.");
     }
 
     const confirmed = await prisma.mediaAsset.update({

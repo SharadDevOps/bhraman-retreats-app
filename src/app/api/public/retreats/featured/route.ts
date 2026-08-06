@@ -7,7 +7,7 @@ export async function GET() {
     const retreat = await prisma.retreat.findFirst({
       where: {
         publicationStatus: "PUBLISHED",
-        status: { in: ["UPCOMING", "BOOKING_OPEN", "SOLD_OUT"] },
+        status: { in: ["UPCOMING", "BOOKING_OPEN", "SOLD_OUT", "ENQUIRY"] },
         endDate: { gte: new Date() },
       },
       orderBy: { startDate: "asc" },

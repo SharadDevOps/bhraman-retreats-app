@@ -16,7 +16,60 @@ export async function POST(request: Request) {
     return apiError(403, "FORBIDDEN", "Content editor access is required.");
   }
   if (!isBlobConfigured()) {
-    return apiError(503, "STORAGE_NOT_CONFIGURED", "Azure media storage is not configured.");
+    const body = await request.clone().json().catch(() => null);
+    const validation = validateMediaUploadRequest(body);
+    if (!validation.valid) return validationError(validation.errors);
+
+    const metadata = validation.value;
+    const localFileName = `local-${randomUUID()}-${metadata.safeFileName}`;
+    const blobName = `local-fallback/${metadata.folder}/${localFileName}`;
+    const publicUrl = `/uploads/${metadata.folder}/${localFileName}`;
+
+    try {
+      const asset = await prisma.mediaAsset.create({
+        data: {
+          blobName,
+          url: publicUrl,
+          kind: metadata.kind,
+          folder: metadata.folder,
+          originalFileName: metadata.fileName,
+          title: metadata.title,
+          altText: metadata.altText,
+          caption: metadata.caption,
+          credit: metadata.credit,
+          mimeType: metadata.mimeType,
+          sizeBytes: metadata.sizeBytes,
+          width: metadata.width,
+          height: metadata.height,
+          durationSeconds: metadata.durationSeconds,
+          uploadStatus: "AUTHORIZED",
+          publicationStatus: "DRAFT",
+        },
+      });
+
+      return apiSuccess(
+        {
+          asset: {
+            id: asset.id,
+            folder: asset.folder,
+            kind: asset.kind,
+            uploadStatus: asset.uploadStatus,
+            publicationStatus: asset.publicationStatus,
+            publicUrl: asset.url,
+          },
+          upload: {
+            url: `/api/admin/media/uploads/local-file-upload?id=${asset.id}`,
+            expiresAt: new Date(Date.now() + 10 * 60_000).toISOString(),
+            requiredHeaders: {
+              "Content-Type": metadata.mimeType,
+            },
+          },
+        },
+        { status: 201 },
+      );
+    } catch (error) {
+      return handleApiError(error);
+    }
   }
 
   const body = await request.json().catch(() => null);

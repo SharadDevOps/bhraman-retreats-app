@@ -1,8 +1,10 @@
+import { promises as fs } from "fs";
+import path from "path";
+import { deleteMediaBlobIfExists, isBlobConfigured } from "@/lib/azure-storage";
 import { apiError, apiSuccess, handleApiError, validationError } from "@/lib/api-response";
 import { getAdminSession } from "@/lib/admin-auth";
 import { getCmsConfig, getCmsDelegate, prepareCmsData, redactCmsRecord } from "@/lib/cms-admin";
 import { isRoleAllowed, validateCmsEntity } from "@/lib/cms-validation.mjs";
-import { deleteMediaBlobIfExists, isBlobConfigured } from "@/lib/azure-storage";
 
 async function authorize(entity: string) {
   const config = getCmsConfig(entity);
@@ -57,8 +59,14 @@ export async function DELETE(_request: Request, context: { params: Promise<{ ent
     if (entity === "media-assets") {
       const asset = await getCmsDelegate(authorization.config).findUnique({ where: { id } });
       if (!asset) return apiError(404, "NOT_FOUND", "Media asset not found.");
-      if (typeof asset.blobName === "string" && isBlobConfigured()) {
-        await deleteMediaBlobIfExists(asset.blobName);
+      if (typeof asset.blobName === "string") {
+        if (asset.blobName.startsWith("local-fallback/")) {
+          const relativePath = (asset.url as string).replace(/^\//, "");
+          const absolutePath = path.join(process.cwd(), "public", relativePath);
+          await fs.unlink(absolutePath).catch(() => null);
+        } else if (isBlobConfigured()) {
+          await deleteMediaBlobIfExists(asset.blobName);
+        }
       }
     }
     await getCmsDelegate(authorization.config).delete({ where: { id } });

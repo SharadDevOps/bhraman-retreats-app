@@ -160,6 +160,7 @@ model Testimonial {
   slug              String    @unique
   name              String
   location          String?
+  imageUrl          String?
   quote             String
   sortOrder         Int       @default(0)
   publicationStatus String    @default("DRAFT")

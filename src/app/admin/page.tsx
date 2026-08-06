@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2, LogOut, Plus, Trash2, Upload } from "lucide-react";
+import { Loader2, LogOut, Plus, Trash2, Upload, Youtube } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { publishMediaAsset, uploadMediaForReview } from "@/lib/media-upload-client";
+import { RetreatsManager } from "@/components/admin/retreats-manager";
 
-type Testimonial = { name: string; location: string; quote: string };
+type Testimonial = { name: string; location: string; imageUrl: string; quote: string };
+type Video = { title: string; url: string };
 type RetreatContent = {
   slug: string; title: string; edition: string | null; summary: string; location: string;
   startDate: string; endDate: string; priceInPaise: number; capacity: number;
@@ -19,8 +21,17 @@ type Booking = {
   createdAt: string; user: { name: string | null; email: string; phone: string | null };
 };
 
-const TABS = ["Content", "Testimonials", "Images", "Bookings"] as const;
+const TABS = ["Content", "Retreats", "Testimonials", "Videos", "Images", "Bookings"] as const;
 const inr = (paise: number) => `₹${(paise / 100).toLocaleString("en-IN")}`;
+
+function youtubeEmbedUrl(url: string): string {
+  try {
+    if (url.includes("youtu.be/")) return url.replace("youtu.be/", "youtube.com/embed/");
+    if (url.includes("watch?v=")) return url.replace("watch?v=", "embed/");
+    if (url.includes("shorts/")) return url.replace("shorts/", "embed/");
+    return url;
+  } catch { return url; }
+}
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState<boolean | null>(null);
@@ -28,6 +39,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("Content");
   const [retreat, setRetreat] = useState<RetreatContent | null>(null);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]);
   const [media, setMedia] = useState<Media>({});
   const [pendingMedia, setPendingMedia] = useState<Partial<Record<"retreat" | "founder" | "hero", PendingMedia>>>({});
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -47,7 +59,8 @@ export default function AdminPage() {
       startDate: String(data.retreat.startDate).slice(0, 10),
       endDate: String(data.retreat.endDate).slice(0, 10),
     });
-    setTestimonials(data.testimonials);
+    setTestimonials(data.testimonials.map((t: Testimonial) => ({ ...t, imageUrl: t.imageUrl ?? "" })));
+    setVideos(Array.isArray(data.videos) ? data.videos : []);
     setMedia(data.media);
     setAuthed(true);
   }, []);
@@ -190,21 +203,91 @@ export default function AdminPage() {
         </form>
       )}
 
+      {tab === "Retreats" && <RetreatsManager />}
+
+      {/* ── TESTIMONIALS TAB ── */}
       {tab === "Testimonials" && (
         <div className="admin-card">
-          <h2>Testimonials</h2>
+          <h2>Written Testimonials <span className="admin-count">{testimonials.length} / 12</span></h2>
+          <p className="admin-note">Add up to 12 written testimonials. Each can optionally include a portrait photo URL.</p>
           {testimonials.map((t, i) => (
             <div className="admin-testimonial" key={i}>
               <div className="admin-grid">
                 <label>Name<input value={t.name} onChange={(e) => setTestimonials(testimonials.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} /></label>
                 <label>Location<input value={t.location} onChange={(e) => setTestimonials(testimonials.map((x, j) => j === i ? { ...x, location: e.target.value } : x))} /></label>
               </div>
-              <label>Quote<textarea rows={2} value={t.quote} onChange={(e) => setTestimonials(testimonials.map((x, j) => j === i ? { ...x, quote: e.target.value } : x))} /></label>
+              <label>
+                Portrait photo URL
+                <input
+                  value={t.imageUrl}
+                  placeholder="https://... (optional — paste a direct image link)"
+                  onChange={(e) => setTestimonials(testimonials.map((x, j) => j === i ? { ...x, imageUrl: e.target.value } : x))}
+                />
+              </label>
+              {t.imageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={t.imageUrl} alt={t.name} className="admin-portrait-preview" />
+              )}
+              <label>Quote<textarea rows={3} value={t.quote} onChange={(e) => setTestimonials(testimonials.map((x, j) => j === i ? { ...x, quote: e.target.value } : x))} /></label>
               <button type="button" className="admin-delete" onClick={() => setTestimonials(testimonials.filter((_, j) => j !== i))}><Trash2 size={14} /> Remove</button>
             </div>
           ))}
-          <button type="button" className="admin-add" onClick={() => setTestimonials([...testimonials, { name: "", location: "", quote: "" }])}><Plus size={15} /> Add testimonial</button>
-          <button className="button button-dark" disabled={busy} onClick={() => save({ testimonials }, "Testimonials saved")}>{busy ? "Saving…" : "Save testimonials"}</button>
+          <div className="admin-testi-actions">
+            {testimonials.length < 12 && (
+              <button type="button" className="admin-add" onClick={() => setTestimonials([...testimonials, { name: "", location: "", imageUrl: "", quote: "" }])}><Plus size={15} /> Add testimonial</button>
+            )}
+            <button className="button button-dark" disabled={busy} onClick={() => save({ testimonials }, "Testimonials saved")}>{busy ? "Saving…" : "Save testimonials"}</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── VIDEOS TAB ── */}
+      {tab === "Videos" && (
+        <div className="admin-card">
+          <h2>YouTube Videos / Shorts <span className="admin-count">{videos.length} / 9</span></h2>
+          <p className="admin-note">
+            Add up to 9 YouTube video or Shorts URLs. These appear on the Guest Voices page in a 3×3 portrait grid.
+            Paste the full YouTube URL (e.g. <code>https://youtube.com/shorts/abc123</code> or <code>https://youtu.be/abc123</code>).
+          </p>
+          {videos.map((v, i) => (
+            <div className="admin-video-entry" key={i}>
+              <div className="admin-video-entry-header">
+                <Youtube size={16} color="#ff0000" />
+                <span className="admin-video-num">Video {i + 1}</span>
+                <button type="button" className="admin-delete admin-delete-sm" onClick={() => setVideos(videos.filter((_, j) => j !== i))}><Trash2 size={13} /> Remove</button>
+              </div>
+              <div className="admin-grid">
+                <label>
+                  Video Title
+                  <input value={v.title} placeholder="e.g. A journey from stress to serenity" onChange={(e) => setVideos(videos.map((x, j) => j === i ? { ...x, title: e.target.value } : x))} />
+                </label>
+                <label>
+                  YouTube URL
+                  <input value={v.url} placeholder="https://youtube.com/shorts/... or https://youtu.be/..." onChange={(e) => setVideos(videos.map((x, j) => j === i ? { ...x, url: e.target.value } : x))} />
+                </label>
+              </div>
+              {v.url && (
+                <div className="admin-video-preview">
+                  <iframe
+                    src={youtubeEmbedUrl(v.url)}
+                    title={v.title || `Video ${i + 1}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    loading="lazy"
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+          <div className="admin-testi-actions">
+            {videos.length < 9 && (
+              <button type="button" className="admin-add" onClick={() => setVideos([...videos, { title: "", url: "" }])}><Plus size={15} /> Add video</button>
+            )}
+            <button className="button button-dark" disabled={busy} onClick={() => save({ videos }, "Videos saved")}>{busy ? "Saving…" : "Save videos"}</button>
+          </div>
+          {videos.length === 0 && (
+            <p className="admin-note" style={{ marginTop: 12 }}>No videos added yet. Click "Add video" to get started.</p>
+          )}
         </div>
       )}
 
@@ -212,7 +295,7 @@ export default function AdminPage() {
         <div className="admin-card">
           <h2>Site images</h2>
           <div className="admin-images">
-            {([["hero", "Hero / homepage background"], ["retreat", "Retreat image"], ["founder", "Founder portrait"]] as const).map(([slot, label]) => (
+            {([ ["hero", "Hero / homepage background"], ["retreat", "Retreat image"], ["founder", "Founder portrait"] ] as const).map(([slot, label]) => (
               <div className="admin-image-slot" key={slot}>
                 <h3>{label}</h3>
                 {media[slot] ? <img src={media[slot]} alt={label} /> : <div className="admin-image-empty">No image yet</div>}

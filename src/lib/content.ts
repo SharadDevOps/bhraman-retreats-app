@@ -84,6 +84,9 @@ export type FeaturedRetreat = {
   itinerary: RetreatDayContent[];
 };
 
+// Lightweight retreat shape (no itinerary) used for the upcoming-retreats list.
+export type RetreatSummary = Omit<FeaturedRetreat, "itinerary">;
+
 export type FounderContent = {
   id: string;
   slug: string;
@@ -99,6 +102,7 @@ export type TestimonialContent = {
   slug: string;
   name: string;
   location?: string | null;
+  imageUrl?: string | null;
   quote: string;
   sortOrder: number;
 };
@@ -147,6 +151,7 @@ export type HomepageData = {
   content: HomeContent;
   elements: ElementContent[];
   retreat: FeaturedRetreat | null;
+  upcomingRetreats: RetreatSummary[];
   founder: FounderContent | null;
   testimonials: TestimonialContent[];
   blog: BlogContent | null;
@@ -243,6 +248,7 @@ function envelopeData<T>(result: PromiseSettledResult<ApiEnvelope<T>>): T | null
 
 export function mapHomepageResponses(results: {
   retreat: PromiseSettledResult<ApiEnvelope<FeaturedRetreat>>;
+  upcoming: PromiseSettledResult<ApiEnvelope<RetreatSummary[]>>;
   settings: PromiseSettledResult<ApiEnvelope<SettingsPayload>>;
   founder: PromiseSettledResult<ApiEnvelope<FounderContent>>;
   testimonials: PromiseSettledResult<ApiEnvelope<TestimonialContent[]>>;
@@ -259,6 +265,7 @@ export function mapHomepageResponses(results: {
     content: mapContent(settings["home.content"]),
     elements: mapElements(settings["home.elements"]),
     retreat: envelopeData(results.retreat),
+    upcomingRetreats: envelopeData(results.upcoming) ?? [],
     founder: envelopeData(results.founder),
     testimonials: (envelopeData(results.testimonials) ?? []).slice(0, 3),
     blog: (envelopeData(results.blogs) ?? [])[0] ?? null,
@@ -279,8 +286,9 @@ async function fetchApi<T>(origin: string, path: string): Promise<ApiEnvelope<T>
 }
 
 export async function getHomepageData(origin: string): Promise<HomepageData> {
-  const [retreat, settings, founder, testimonials, blogs, quotes, media] = await Promise.allSettled([
+  const [retreat, upcoming, settings, founder, testimonials, blogs, quotes, media] = await Promise.allSettled([
     fetchApi<FeaturedRetreat>(origin, "/api/public/retreats/featured"),
+    fetchApi<RetreatSummary[]>(origin, "/api/public/retreats/upcoming"),
     fetchApi<SettingsPayload>(origin, "/api/public/site-settings"),
     fetchApi<FounderContent>(origin, "/api/public/founder"),
     fetchApi<TestimonialContent[]>(origin, "/api/public/testimonials?page=1&pageSize=3&sort=sortOrder&order=asc"),
@@ -288,7 +296,44 @@ export async function getHomepageData(origin: string): Promise<HomepageData> {
     fetchApi<QuoteContent[]>(origin, "/api/public/quotes?page=1&pageSize=6&sort=sortOrder&order=asc"),
     fetchApi<MediaContent[]>(origin, "/api/public/media?page=1&pageSize=100"),
   ]);
-  return mapHomepageResponses({ retreat, settings, founder, testimonials, blogs, quotes, media });
+  return mapHomepageResponses({ retreat, upcoming, settings, founder, testimonials, blogs, quotes, media });
+}
+
+export async function getUpcomingRetreats(origin: string): Promise<RetreatSummary[]> {
+  try {
+    const response = await fetchApi<RetreatSummary[]>(origin, "/api/public/retreats/upcoming");
+    return response.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export type VideoEntry = {
+  title: string;
+  url: string;
+};
+
+export type TestimonialsPageData = {
+  testimonials: TestimonialContent[];
+  videos: VideoEntry[];
+};
+
+export async function getTestimonialsPageData(origin: string): Promise<TestimonialsPageData> {
+  const [testimonials, settings] = await Promise.allSettled([
+    fetchApi<TestimonialContent[]>(origin, "/api/public/testimonials?page=1&pageSize=100&sort=sortOrder&order=asc"),
+    fetchApi<Record<string, unknown>>(origin, "/api/public/site-settings"),
+  ]);
+
+  const rawVideos = settings.status === "fulfilled"
+    ? (settings.value.data as Record<string, unknown>)?.["testimonials.videos"]
+    : null;
+
+  return {
+    testimonials: testimonials.status === "fulfilled" ? testimonials.value.data : [],
+    videos: Array.isArray(rawVideos)
+      ? (rawVideos as VideoEntry[]).filter((v) => typeof v?.url === "string" && v.url.trim())
+      : [],
+  };
 }
 
 export async function getBlogPost(origin: string, slug: string): Promise<BlogDetailContent | null> {

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
+import { NavigationWrapper } from "@/components/navigation-wrapper";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export async function generateMetadata(): Promise<Metadata> {
   const incomingHeaders = await headers();
@@ -30,5 +32,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><head><link rel="preload" as="image" href="/hero-himalayan-dawn.png" /></head><body>{children}</body></html>;
+  return (
+    <html lang="en">
+      <head>
+        <link rel="preload" as="image" href="/hero-himalayan-dawn.png" />
+      </head>
+      <body>
+        <ThemeProvider />
+        <NavigationWrapper />
+        {children}
+      </body>
+    </html>
+  );
 }
