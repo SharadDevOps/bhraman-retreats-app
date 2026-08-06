@@ -796,19 +796,25 @@ body { padding-top: 0; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   animation: tv-card-rise .45s var(--ease) both;
   animation-delay: calc(var(--si, 0) * 70ms);
+  width: 315px;
+  max-width: 100%;
 }
 .tv-short-frame {
   position: relative;
   aspect-ratio: 9 / 16;
-  width: 247.5px;
-  max-width: 100%;
-  border-radius: 10px;
+  width: 100%;
+  border-radius: 12px;
   overflow: hidden;
   background: var(--paper);
-  box-shadow: 0 10px 30px rgba(0,0,0,.06), 0 0 0 1px var(--line);
+  box-shadow: 0 12px 36px rgba(0,0,0,.08), 0 0 0 1px var(--line);
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+.tv-short-frame:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 44px rgba(0,0,0,.12), 0 0 0 1px var(--gold);
 }
 .tv-short-frame iframe {
   position: absolute;
@@ -818,13 +824,14 @@ body { padding-top: 0; }
   border: 0;
 }
 .tv-short-title {
-  font: 500 12px/1.4 var(--font-sans);
+  font: 500 13px/1.45 var(--font-sans);
   color: var(--text-muted);
   text-align: center;
-  padding: 0 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  padding: 2px 8px 12px;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  width: 100%;
 }
 
 /* ── WRITTEN TESTIMONIALS ── */
@@ -995,22 +1002,24 @@ body { padding-top: 0; }
 }
 .tv-cta-link:hover { color: var(--fire); }
 
-/* ── RESPONSIVE ── */
-@media (max-width: 1100px) { .tv-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 860px)  {
+@media (max-width: 1100px) {
+  .tv-grid { grid-template-columns: repeat(2, 1fr); }
   .tv-shorts-grid { grid-template-columns: repeat(2, auto); }
-  .tv-short-frame { width: 213.75px; }
+  .tv-short-card { width: 290px; }
+}
+@media (max-width: 860px)  {
+  .tv-short-card { width: 260px; }
 }
 @media (max-width: 640px)  {
   .tv-grid { grid-template-columns: 1fr; }
-  .tv-shorts-grid { grid-template-columns: repeat(2, auto); }
-  .tv-short-frame { width: 180px; }
+  .tv-short-card { width: 220px; }
   .tv-card-foot { flex-wrap: wrap; }
   .tv-hero { min-height: 60vh; }
   .tv-cta-row { flex-direction: column; }
 }
-@media (max-width: 420px)  {
+@media (max-width: 480px)  {
   .tv-shorts-grid { grid-template-columns: auto; }
+  .tv-short-card { width: min(300px, 85vw); }
 }
 
 
