@@ -2,7 +2,6 @@
 
 import { ArrowDown, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Navigation } from "@/components/navigation";
 import { ElementOrbit } from "@/components/hero/element-orbit";
 import { HeroBackgroundReveal } from "@/components/hero/hero-background-reveal";
 import { HeroContent } from "@/components/hero/hero-content";
@@ -239,7 +238,6 @@ export function CinematicHero({
       <ElementOrbit stage={stage} />
       <div className="hero-intro-mist" aria-hidden="true"><i /><i /></div>
 
-      <Navigation />
       <HeroContent content={content} founderName={founderName} />
 
       <div className="intro-controls" aria-label="Intro controls">

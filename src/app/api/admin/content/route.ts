@@ -4,10 +4,11 @@ import { isAdmin } from "@/lib/admin-auth";
 import { retreatCatalog, selectFeaturedRetreat } from "@/data/retreat";
 
 async function readContent() {
-  const [retreatRows, testimonials, mediaRow] = await Promise.all([
+  const [retreatRows, testimonials, mediaRow, videosRow] = await Promise.all([
     prisma.retreat.findMany({ where: { slug: { in: retreatCatalog.map((retreat) => retreat.slug) } } }),
     prisma.testimonial.findMany({ orderBy: { sortOrder: "asc" } }),
     prisma.siteSetting.findUnique({ where: { key: "media.slots" } }),
+    prisma.siteSetting.findUnique({ where: { key: "testimonials.videos" } }),
   ]);
   const retreats = retreatCatalog.map((definition) => {
     const stored = retreatRows.find((row) => row.slug === definition.slug);
@@ -32,6 +33,7 @@ async function readContent() {
     retreat: selectFeaturedRetreat(retreats),
     testimonials,
     media: mediaRow && typeof mediaRow.value === "object" ? mediaRow.value : {},
+    videos: Array.isArray(videosRow?.value) ? videosRow.value : [],
   };
 }
 
@@ -84,21 +86,40 @@ export async function PUT(request: Request) {
       .map((t: Record<string, unknown>) => ({
         name: String(t.name ?? "").trim(),
         location: String(t.location ?? "").trim(),
+        imageUrl: t.imageUrl && typeof t.imageUrl === "string" ? t.imageUrl.trim() : null,
         quote: String(t.quote).trim(),
       }));
     await prisma.$transaction(async (tx) => {
       await tx.testimonial.deleteMany({});
       if (clean.length) {
         await tx.testimonial.createMany({
-          data: clean.map((testimonial: { name: string; location: string; quote: string }, index: number) => ({
+          data: clean.map((testimonial: { name: string; location: string; imageUrl: string | null; quote: string }, index: number) => ({
             slug: `guest-${index + 1}-${testimonial.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "anonymous"}`,
-            ...testimonial,
+            name: testimonial.name,
+            location: testimonial.location,
+            imageUrl: testimonial.imageUrl,
+            quote: testimonial.quote,
             sortOrder: index,
             publicationStatus: "PUBLISHED",
             publishedAt: new Date(),
           })),
         });
       }
+    });
+  }
+
+  if (Array.isArray(body.videos)) {
+    const cleanVideos = body.videos
+      .filter((v: Record<string, unknown>) => typeof v?.url === "string" && v.url.trim())
+      .slice(0, 9)
+      .map((v: Record<string, unknown>) => ({
+        title: String(v.title ?? "").trim(),
+        url: String(v.url).trim(),
+      }));
+    await prisma.siteSetting.upsert({
+      where: { key: "testimonials.videos" },
+      update: { value: cleanVideos, publicationStatus: "PUBLISHED", publishedAt: new Date() },
+      create: { key: "testimonials.videos", value: cleanVideos, publicationStatus: "PUBLISHED", publishedAt: new Date() },
     });
   }
 

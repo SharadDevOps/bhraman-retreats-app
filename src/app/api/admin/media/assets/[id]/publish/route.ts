@@ -1,3 +1,5 @@
+import { promises as fs } from "fs";
+import path from "path";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hasAdminRole } from "@/lib/admin-auth";
@@ -24,7 +26,19 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     if (asset.uploadStatus !== "CONFIRMED") {
       return apiError(409, "UPLOAD_NOT_CONFIRMED", "Confirm the Blob upload before publishing.");
     }
-    await getMediaBlobProperties(asset.blobName);
+
+    const isLocal = asset.blobName.startsWith("local-fallback/");
+    if (isLocal) {
+      const relativePath = asset.url.replace(/^\//, "");
+      const absolutePath = path.join(process.cwd(), "public", relativePath);
+      try {
+        await fs.stat(absolutePath);
+      } catch (error) {
+        return apiError(409, "BLOB_NOT_FOUND", "The uploaded local file no longer exists.");
+      }
+    } else {
+      await getMediaBlobProperties(asset.blobName);
+    }
 
     const published = await prisma.$transaction(async (tx) => {
       const updated = await tx.mediaAsset.update({
