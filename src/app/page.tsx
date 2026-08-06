@@ -197,11 +197,43 @@ export default async function Home() {
         </SectionContainer>
         {testimonials.length > 0 ? (
           <div className="testimonial-grid">
-            {testimonials.map((testimonial) => (
-              <QuoteBlock className="testimonial-card" key={testimonial.id} attribution={<><strong>{testimonial.name}</strong>{testimonial.location && <span>{testimonial.location}</span>}</>}>
-                {testimonial.quote}
-              </QuoteBlock>
-            ))}
+            {testimonials.map((testimonial) => {
+              const avatar = testimonial.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={testimonial.imageUrl}
+                  alt={testimonial.name}
+                  className="tv-card-photo"
+                  style={{ width: "48px", height: "48px" }}
+                />
+              ) : (
+                <div
+                  className="tv-card-avatar"
+                  aria-hidden="true"
+                  style={{ width: "48px", height: "48px", font: "700 18px/48px var(--font-display)" }}
+                >
+                  {testimonial.name.charAt(0).toUpperCase()}
+                </div>
+              );
+
+              return (
+                <QuoteBlock
+                  className="testimonial-card"
+                  key={testimonial.id}
+                  attribution={
+                    <div style={{ display: "flex", alignItems: "center", gap: "14px", marginTop: "16px" }}>
+                      {avatar}
+                      <div>
+                        <strong>{testimonial.name}</strong>
+                        {testimonial.location && <span>{testimonial.location}</span>}
+                      </div>
+                    </div>
+                  }
+                >
+                  {testimonial.quote}
+                </QuoteBlock>
+              );
+            })}
           </div>
         ) : (
           <SectionContainer className="empty-content"><p>Guest reflections will appear here once they are approved for publication.</p></SectionContainer>
