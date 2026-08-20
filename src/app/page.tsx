@@ -14,6 +14,7 @@ import {
   SectionLabel,
 } from "@/components/design-system";
 import { EnquiryForm } from "@/components/enquiry-form";
+import { PhilosophyParagraphs } from "@/components/philosophy-paragraphs";
 import { ExperienceBhraman } from "@/components/experiences/experience-bhraman";
 import { Itinerary, type ItineraryItem } from "@/components/itinerary";
 import { Fireflies } from "@/components/nature-effects";
@@ -71,7 +72,7 @@ export default async function Home() {
         <div><SectionLabel>{content.philosophyLabel}</SectionLabel><span className="botanical" aria-hidden="true">❦</span></div>
         <div>
           <EditorialHeading>{content.philosophyTitle}<br /><em>{content.philosophyEmphasis}</em></EditorialHeading>
-          {content.philosophyParagraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+          <PhilosophyParagraphs paragraphs={content.philosophyParagraphs} />
           <SecondaryButton href="#elements" showArrow>{content.philosophyCta}</SecondaryButton>
         </div>
       </section>
@@ -87,7 +88,7 @@ export default async function Home() {
               <article className={`element-card ${element.key}`} key={element.key}>
                 <ElementBadge number={element.symbol} label={element.sanskrit} />
                 <h3>{element.name}</h3><strong>{element.verb}</strong>
-                <div className="element-reveal"><span>{element.practice}</span><p>{element.detail}</p></div>
+                <div className="element-reveal"><p>{element.detail}</p></div>
               </article>
             ))}
           </SectionContainer>
