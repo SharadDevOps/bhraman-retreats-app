@@ -36,8 +36,8 @@ async function readContent() {
   const philosophyParagraphs = Array.isArray(homeContent.philosophyParagraphs)
     ? homeContent.philosophyParagraphs as string[]
     : [
-        "When these elements are in balance, the body's natural intelligence flourishes — digestion strengthens, sleep deepens, hormones align, and the nervous system returns to its natural rhythm of rest and renewal.",
-        "Through elemental therapy, the senses awaken, pranic flow becomes unobstructed, and the mind begins to mirror the quiet order of nature itself. Each day of this retreat is devoted to one element — allowing you to experience its medicine through carefully curated practices, yogic techniques, and sensory experiences that bring harmony to body, mind, and spirit.",
+        "When these elements are in balance, the body's natural intelligence flourishes — digestion strengthens, sleep deepens, hormones align, and the nervous system returns to its natural rhythm of rest and renewal. Through elemental therapy, the senses awaken, pranic flow becomes unobstructed, and the mind begins to mirror the quiet order of nature itself.",
+        "Each day of this retreat is devoted to one element — allowing you to experience its medicine through carefully curated practices, yogic techniques, and sensory experiences that bring harmony to body, mind, and spirit.",
       ];
   return {
     retreat: selectFeaturedRetreat(retreats),
