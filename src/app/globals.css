@@ -165,6 +165,9 @@ em { font-weight: 400; }
   margin-inline: auto;
 }
 .editorial-heading { text-wrap: balance; }
+/* All section headings use the Bhraman accent orange */
+.editorial-heading,
+.editorial-heading em { color: #e27c39; }
 .quote-block { margin: 0; }
 .responsive-media { position: relative; overflow: hidden; }
 .responsive-media img { width: 100%; height: 100%; object-fit: cover; }

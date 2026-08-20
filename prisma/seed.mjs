@@ -256,7 +256,7 @@ async function main() {
     create: {
       key: "home.content",
       value: {
-        heroEyebrow: "Elemental retreats · Himalayas, India",
+        heroEyebrow: "Elemental therapy retreats · Himalayas, India",
         heroTitle: "Remember your",
         heroEmphasis: "natural rhythm.",
         heroCopy: "Five elements. Five days. One quiet return to the part of you that never forgot how to be whole.",
