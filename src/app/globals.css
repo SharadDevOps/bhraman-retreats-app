@@ -170,22 +170,42 @@ em { font-weight: 400; }
 .editorial-heading em { color: #e27c39; }
 .quote-block { margin: 0; }
 .show-more-btn {
-  display: inline-block;
-  margin-top: 0.75rem;
-  background: none;
-  border: none;
-  padding: 0;
-  font: 500 0.85rem/1 var(--font-body);
-  letter-spacing: 0.06em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 18px;
+  padding: 6px 14px 6px 16px;
+  background: rgba(226, 124, 57, 0.08);
+  border: 1px solid rgba(226, 124, 57, 0.22);
+  border-radius: 999px;
+  font: 500 11.5px/1 var(--font-sans);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #e27c39;
   cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  opacity: 0.85;
-  transition: opacity 0.2s;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
-.show-more-btn:hover { opacity: 1; }
+.show-more-btn:hover {
+  background: rgba(226, 124, 57, 0.15);
+  border-color: rgba(226, 124, 57, 0.42);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(226, 124, 57, 0.12);
+}
+.show-more-btn:focus-visible {
+  outline: 2px solid #e27c39;
+  outline-offset: 2px;
+}
+.show-more-btn svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.2;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.show-more-btn.expanded svg {
+  transform: rotate(180deg);
+}
 .responsive-media { position: relative; overflow: hidden; }
 .responsive-media img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -492,14 +512,32 @@ body { padding-top: 0; }
   font-size: clamp(52px, 6.2vw, 94px);
   letter-spacing: -.04em;
 }
+.philosophy-content-block {
+  margin-bottom: 38px;
+}
+.philosophy-lead,
 .manifesto > div:last-child > p {
   max-width: 800px;
   color: var(--mud);
   font: 400 21px/1.7 var(--font-display);
 }
+.philosophy-extended {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  opacity: 0;
+}
+.philosophy-extended.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.philosophy-extended-inner {
+  overflow: hidden;
+}
+.philosophy-extended-inner p,
 .manifesto > div:last-child > p + p {
   max-width: 660px;
-  margin: 28px 0 38px;
+  margin: 20px 0 0;
   color: var(--text-muted);
   font: 300 15px/1.9 var(--font-sans);
 }
