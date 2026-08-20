@@ -56,6 +56,7 @@ export default async function Home() {
     "retreats/ladakh-edition-1/participants",
     "retreats/ladakh-edition-1/monastery",
   ]).slice(0, 3);
+  const philosophyMedia = media.find((asset) => asset.url === mediaSlots["bg.philosophy"]);
   const blogMedia = mediaIn(media, ["blog/why-choose-bhraman/cover"])[0];
 
   return (
@@ -75,6 +76,16 @@ export default async function Home() {
           <PhilosophyParagraphs paragraphs={content.philosophyParagraphs} />
           <SecondaryButton href="#elements" showArrow>{content.philosophyCta}</SecondaryButton>
         </div>
+        {philosophyMedia && (
+          <div className="manifesto-image">
+            <ResponsiveMedia
+              src={philosophyMedia.url}
+              alt={philosophyMedia.altText}
+              fallbackTitle="Philosophy"
+              fallbackHint="Philosophy image"
+            />
+          </div>
+        )}
       </section>
 
       <section className="elements-section" id="elements">
