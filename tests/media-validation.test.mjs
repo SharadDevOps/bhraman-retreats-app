@@ -11,6 +11,7 @@ import { validateCmsEntity } from "../src/lib/cms-validation.mjs";
 
 test("approved taxonomy contains every requested Bhraman media folder", () => {
   assert.ok(MEDIA_FOLDERS.length >= 27);
+  assert.ok(MEDIA_FOLDERS.includes("images/background/philosophy"));
   assert.ok(MEDIA_FOLDERS.includes("retreats/ladakh-edition-1/participants"));
   assert.ok(MEDIA_FOLDERS.includes("retreats/ladakh-edition-1/monastery"));
   assert.ok(MEDIA_FOLDERS.includes("testimonials/posters"));
