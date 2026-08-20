@@ -102,8 +102,32 @@ Write-Host "== 6/6 Configure startup + zip + deploy to $app ==" -ForegroundColor
 # Next standalone must bind to 0.0.0.0 for App Service to reach it.
 az webapp config set --resource-group $rg --name $app `
   --startup-file "HOSTNAME=0.0.0.0 node server.js" | Out-Null
+
+# IMPORTANT: Compress-Archive on Windows stores zip entry paths with backslashes.
+# When Azure's Linux host extracts the zip with `unzip`, backslashes are treated as
+# literal filename characters (not path separators), so the entire directory tree
+# collapses flat — node_modules, .next, etc. all disappear. Node.js then can't find
+# any modules and exits in ~1 second with code 1.
+#
+# Fix: use .NET's ZipArchive API directly, replacing every \ with / in entry names.
 if (Test-Path app.zip) { Remove-Item app.zip -Force }
-Compress-Archive -Path .next/standalone/* -DestinationPath app.zip -Force
+Add-Type -Assembly System.IO.Compression
+Add-Type -Assembly System.IO.Compression.FileSystem
+$bundleRoot = (Resolve-Path ".next/standalone").Path
+$zipStream  = [System.IO.File]::Open("$repoRoot\app.zip", [System.IO.FileMode]::Create)
+$zip        = New-Object System.IO.Compression.ZipArchive($zipStream, [System.IO.Compression.ZipArchiveMode]::Create)
+$files      = Get-ChildItem -Path $bundleRoot -Recurse -File
+foreach ($f in $files) {
+  $entryName = $f.FullName.Substring($bundleRoot.Length + 1).Replace('\', '/')
+  [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+    $zip, $f.FullName, $entryName,
+    [System.IO.Compression.CompressionLevel]::Fastest
+  ) | Out-Null
+}
+$zip.Dispose(); $zipStream.Dispose()
+$sizeMB = [math]::Round((Get-Item "$repoRoot\app.zip").Length / 1MB, 1)
+Write-Host "  → app.zip: $sizeMB MB, $($files.Count) files (forward-slash paths)"
+
 az webapp deploy --resource-group $rg --name $app --src-path app.zip --type zip
 
 Write-Host ""

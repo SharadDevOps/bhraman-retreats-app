@@ -29,6 +29,7 @@ const retreat = {
 function completeResults(overrides = {}) {
   return {
     retreat: fulfilled(retreat),
+    upcoming: fulfilled([]),
     settings: fulfilled({
       "home.content": { heroTitle: "Return to", philosophyParagraphs: ["A dynamic philosophy."] },
       "home.elements": [{ key: "earth", symbol: "01", name: "Earth", sanskrit: "Prithvi", verb: "Root", practice: "Mud therapy", detail: "Ground through the body." }],
@@ -94,6 +95,7 @@ test("requests every required public endpoint and maps their responses", async (
     requested.push(`${url.pathname}${url.search}`);
     const responseByPath = {
       "/api/public/retreats/featured": retreat,
+      "/api/public/retreats/upcoming": [],
       "/api/public/site-settings": { "home.content": { heroTitle: "API title" }, "home.elements": [] },
       "/api/public/founder": { id: "founder-1", slug: "founder", name: "Guide", title: "Founder", bio: "Bio" },
       "/api/public/testimonials": [],
@@ -113,6 +115,7 @@ test("requests every required public endpoint and maps their responses", async (
       "/api/public/media",
       "/api/public/quotes",
       "/api/public/retreats/featured",
+      "/api/public/retreats/upcoming",
       "/api/public/site-settings",
       "/api/public/testimonials",
     ]);

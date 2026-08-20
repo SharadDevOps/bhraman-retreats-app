@@ -13,7 +13,7 @@ type RetreatContent = {
   slug: string; title: string; edition: string | null; summary: string; location: string;
   startDate: string; endDate: string; priceInPaise: number; capacity: number;
 };
-type Media = { retreat?: string; founder?: string; hero?: string; "bg.upcoming-retreats"?: string; "bg.testimonials"?: string };
+type Media = { retreat?: string; founder?: string; hero?: string; "bg.upcoming-retreats"?: string; "bg.testimonials"?: string; "bg.philosophy"?: string };
 type PendingMedia = { id: string; url: string };
 type Booking = {
   id: string; reference: string; guests: number; totalInPaise: number;
@@ -199,7 +199,8 @@ export default function AdminPage() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
   const [media, setMedia] = useState<Media>({});
-  const [pendingMedia, setPendingMedia] = useState<Partial<Record<"retreat" | "founder" | "hero" | "bg.upcoming-retreats" | "bg.testimonials", PendingMedia>>>({});
+  const [philosophyParagraphs, setPhilosophyParagraphs] = useState<[string, string]>(["", ""]);
+  const [pendingMedia, setPendingMedia] = useState<Partial<Record<"retreat" | "founder" | "hero" | "bg.upcoming-retreats" | "bg.testimonials" | "bg.philosophy", PendingMedia>>>({});
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [cropTarget, setCropTarget] = useState<{ file: File; testimonialIndex: number; imageUrl: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -221,6 +222,9 @@ export default function AdminPage() {
     setTestimonials(data.testimonials.map((t: Testimonial) => ({ ...t, imageUrl: t.imageUrl ?? "" })));
     setVideos(Array.isArray(data.videos) ? data.videos : []);
     setMedia(data.media);
+    if (Array.isArray(data.philosophyParagraphs) && data.philosophyParagraphs.length >= 2) {
+      setPhilosophyParagraphs([data.philosophyParagraphs[0] ?? "", data.philosophyParagraphs[1] ?? ""]);
+    }
     setAuthed(true);
   }, []);
 
@@ -261,11 +265,12 @@ export default function AdminPage() {
     flash(okMsg);
   }
 
-  type SlotType = "retreat" | "founder" | "hero" | "bg.upcoming-retreats" | "bg.testimonials";
+  type SlotType = "retreat" | "founder" | "hero" | "bg.upcoming-retreats" | "bg.testimonials" | "bg.philosophy";
 
   function mediaFolderFor(slot: SlotType) {
     if (slot === "bg.upcoming-retreats") return "images/background/upcoming-retreats";
     if (slot === "bg.testimonials") return "images/background/testimonials";
+    if (slot === "bg.philosophy") return "images/background/philosophy";
     if (slot === "founder") return "founder/profile";
     if (slot === "hero") return "site/hero";
     if (retreat?.slug.includes("uttarakhand")) return "retreats/uttarakhand-december/cover";
@@ -284,6 +289,8 @@ export default function AdminPage() {
             ? "Upcoming retreats background"
             : slot === "bg.testimonials"
               ? "Guest voices background"
+              : slot === "bg.philosophy"
+              ? "Philosophy section image"
               : `${retreat?.title ?? "Bhraman retreat"} cover`;
       const asset = await uploadMediaForReview(file, {
         folder: mediaFolderFor(slot),
@@ -387,6 +394,22 @@ export default function AdminPage() {
           </div>
           <label>Summary<textarea rows={3} value={retreat.summary} onChange={(e) => setRetreat({ ...retreat, summary: e.target.value })} /></label>
           <button className="button button-dark" disabled={busy}>{busy ? "Saving…" : "Save content"}</button>
+        </form>
+      )}
+
+      {tab === "Content" && (
+        <form className="admin-card" onSubmit={(e) => { e.preventDefault(); save({ philosophyParagraphs }, "Philosophy text saved"); }}>
+          <h2>Philosophy section text</h2>
+          <p className="admin-note">The first paragraph is always visible. The second appears after the "Show more" link.</p>
+          <label>
+            First paragraph (always visible — ends with "renewal")
+            <textarea rows={4} value={philosophyParagraphs[0]} onChange={(e) => setPhilosophyParagraphs([e.target.value, philosophyParagraphs[1]])} />
+          </label>
+          <label>
+            Second paragraph (hidden behind "Show more")
+            <textarea rows={4} value={philosophyParagraphs[1]} onChange={(e) => setPhilosophyParagraphs([philosophyParagraphs[0], e.target.value])} />
+          </label>
+          <button className="button button-dark" disabled={busy}>{busy ? "Saving…" : "Save philosophy text"}</button>
         </form>
       )}
 
@@ -515,6 +538,7 @@ export default function AdminPage() {
               ["hero", "Hero / homepage background"],
               ["retreat", "Retreat image"],
               ["founder", "Founder portrait"],
+              ["bg.philosophy", "Philosophy section image"],
               ["bg.upcoming-retreats", "Upcoming Retreats background"],
               ["bg.testimonials", "Guest Voices background"]
             ] as const).map(([slot, label]) => (
