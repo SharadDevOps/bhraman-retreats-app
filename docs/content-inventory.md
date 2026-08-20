@@ -43,7 +43,7 @@ Additional hardcoded date/year content:
 
 ### Shared/approved hero copy
 
-- “Elemental retreats · Himalayas, India”
+- “Elemental therapy retreats · Himalayas, India”
 - “Remember your natural rhythm.”
 - “Five elements. Five days. One quiet return to the part of you that never forgot how to be whole.”
 - CTA: “Explore the retreat”
