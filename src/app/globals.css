@@ -504,15 +504,18 @@ body { padding-top: 0; }
   font: 300 15px/1.9 var(--font-sans);
 }
 .botanical { display: block; margin-top: 84px; color: var(--air); font: 126px var(--font-display); opacity: .32; }
-.manifesto-image {
-  grid-column: 1 / -1;
-  margin-top: 16px;
-  border-radius: 4px;
+.manifesto-art {
+  position: relative;
   overflow: hidden;
-  aspect-ratio: 16 / 7;
+  border-radius: 4px;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  align-self: start;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
 }
-.manifesto-image .responsive-media,
-.manifesto-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.manifesto-art .responsive-media,
+.manifesto-art .slot-img,
+.manifesto-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .elements-section {
   padding: var(--section-space) clamp(18px, 3vw, 48px);
@@ -1629,6 +1632,7 @@ footer.site-footer > small {
   .hero-content { width: 92%; }
   .hero-background { background-position: 58% center; }
   .manifesto { grid-template-columns: 1fr; gap: 36px; }
+  .manifesto-art { aspect-ratio: 16 / 10; max-height: 400px; }
   .botanical { display: none; }
   .element-grid { grid-template-columns: repeat(2, 1fr); }
   .element-card:last-child { grid-column: 1/-1; }

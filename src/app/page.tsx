@@ -57,6 +57,7 @@ export default async function Home() {
     "retreats/ladakh-edition-1/monastery",
   ]).slice(0, 3);
   const philosophyMedia = media.find((asset) => asset.url === mediaSlots["bg.philosophy"]);
+  const philosophyImageUrl = mediaSlots["bg.philosophy"] ?? philosophyMedia?.url;
   const blogMedia = mediaIn(media, ["blog/why-choose-bhraman/cover"])[0];
 
   return (
@@ -70,22 +71,23 @@ export default async function Home() {
       />
 
       <section className="manifesto section" id="philosophy">
-        <div><SectionLabel>{content.philosophyLabel}</SectionLabel><span className="botanical" aria-hidden="true">❦</span></div>
+        {philosophyImageUrl ? (
+          <div className="manifesto-art">
+            <ResponsiveMedia
+              src={philosophyImageUrl}
+              alt={philosophyMedia?.altText ?? "Philosophy of Bhraman"}
+              fallbackTitle="Philosophy"
+              fallbackHint="Philosophy image"
+            />
+          </div>
+        ) : (
+          <div><SectionLabel>{content.philosophyLabel}</SectionLabel><span className="botanical" aria-hidden="true">❦</span></div>
+        )}
         <div>
           <EditorialHeading>{content.philosophyTitle}<br /><em>{content.philosophyEmphasis}</em></EditorialHeading>
           <PhilosophyParagraphs paragraphs={content.philosophyParagraphs} />
           <SecondaryButton href="#elements" showArrow>{content.philosophyCta}</SecondaryButton>
         </div>
-        {philosophyMedia && (
-          <div className="manifesto-image">
-            <ResponsiveMedia
-              src={philosophyMedia.url}
-              alt={philosophyMedia.altText}
-              fallbackTitle="Philosophy"
-              fallbackHint="Philosophy image"
-            />
-          </div>
-        )}
       </section>
 
       <section className="elements-section" id="elements">
