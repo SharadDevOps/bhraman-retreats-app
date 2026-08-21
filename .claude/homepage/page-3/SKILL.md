@@ -1,10 +1,11 @@
-# Page 3 — Five Pathways Back to Balance (Panch Mahābhūta) (Claude Skill Reference)
+# Page 3 — The Five-Day Journey (Claude Skill Reference)
 
-> **Source of Truth**: [Five pathways back to balance Skill](../../../.agents/homepage/page-3/SKILL.md)
+> **Source of Truth**: [Page 3 Skill](../../../.agents/homepage/page-3/SKILL.md)
 
-Interactive presentation of the five elements (Earth, Water, Fire, Air, Space) and their healing modalities.
+The Five-Day Journey header and clickable five elements cards with itinerary day sync.
 
-Refer to the primary skill definition:
+Refer to:
 - [Primary Section Documentation](../../../.agents/homepage/page-3/SKILL.md)
 - [Homepage Master Skill](../../../.agents/homepage/SKILL.md)
+- [Typography & Colors System](../../../.agents/typography-colors/SKILL.md)
 - [Project Brain Architecture](../../../brain.md)

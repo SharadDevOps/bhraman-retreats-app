@@ -2,7 +2,7 @@
 
 > **Source of Truth**: [Page 2 Skill](../../../.agents/homepage/page-2/SKILL.md)
 
-Manifesto & elemental healing philosophy section connecting human health and rejuvenation to the Panch Mahābhūta.
+Manifesto & elemental therapy section featuring the 3-level typography hierarchy.
 
 Refer to:
 - [Primary Section Documentation](../../../.agents/homepage/page-2/SKILL.md)

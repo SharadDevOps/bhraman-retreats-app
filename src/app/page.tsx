@@ -83,8 +83,12 @@ export default async function Home() {
         ) : (
           <div><SectionLabel>{content.philosophyLabel}</SectionLabel><span className="botanical" aria-hidden="true">❦</span></div>
         )}
-        <div>
-          <EditorialHeading>{content.philosophyTitle}<br /><em className="manifesto-tagline">{content.philosophyEmphasis}</em></EditorialHeading>
+        <div className="manifesto-content">
+          <SectionLabel className="manifesto-eyebrow">{content.philosophyLabel}</SectionLabel>
+          <EditorialHeading className="manifesto-heading">
+            <span className="manifesto-title">{content.philosophyTitle}</span>
+            <em className="manifesto-tagline">{content.philosophyEmphasis}</em>
+          </EditorialHeading>
           <PhilosophyParagraphs paragraphs={content.philosophyParagraphs} />
           <SecondaryButton href="#elements" showArrow>{content.philosophyCta}</SecondaryButton>
         </div>
@@ -92,17 +96,40 @@ export default async function Home() {
 
       <section className="elements-section" id="elements">
         <SectionContainer className="section-heading">
-          <div><SectionLabel>{content.elementsLabel}</SectionLabel><EditorialHeading>{content.elementsTitle}<br /><em>{content.elementsEmphasis}</em></EditorialHeading></div>
+          <div>
+            <SectionLabel>{content.elementsLabel}</SectionLabel>
+            <EditorialHeading className="journey-title">
+              {content.elementsTitle.includes("\n") ? (
+                content.elementsTitle.split("\n").map((line, idx) => (
+                  <span key={idx}>
+                    {line}
+                    <br />
+                  </span>
+                ))
+              ) : (
+                <>
+                  {content.elementsTitle}
+                  <br />
+                </>
+              )}
+              <em>{content.elementsEmphasis}</em>
+            </EditorialHeading>
+          </div>
           <p>{content.elementsIntro}</p>
         </SectionContainer>
         {elements.length > 0 ? (
           <SectionContainer className="element-grid">
-            {elements.map((element) => (
-              <article className={`element-card ${element.key}`} key={element.key}>
+            {elements.map((element, index) => (
+              <a
+                href={`#day-${element.key}`}
+                className={`element-card ${element.key}`}
+                key={element.key}
+                aria-label={`Explore Day ${index + 1} — ${element.name}`}
+              >
                 <ElementBadge number={element.symbol} label={element.sanskrit} />
                 <h3>{element.name}</h3><strong>{element.verb}</strong>
                 <div className="element-reveal"><p>{element.detail}</p></div>
-              </article>
+              </a>
             ))}
           </SectionContainer>
         ) : (

@@ -36,8 +36,8 @@ All domain intelligence and system operations are documented in modular agent sk
 | Page | Section Name | Description & Key Features | Section Skill |
 |---|---|---|---|
 | **Page 1** | Remember your natural rhythm | Cinematic hero sequence, ambient sound toggle, skip intro, scroll cue | [.agents/homepage/page-1/SKILL.md](.agents/homepage/page-1/SKILL.md) |
-| **Page 2** | ELEMENTAL THERAPY | Philosophy manifesto & healing through the 5 great elements | [.agents/homepage/page-2/SKILL.md](.agents/homepage/page-2/SKILL.md) |
-| **Page 3** | Five pathways back to balance | Panch Mahābhūta five elements grid & practice details | [.agents/homepage/page-3/SKILL.md](.agents/homepage/page-3/SKILL.md) |
+| **Page 2** | Elemental Therapy | Philosophy manifesto & 3-level typography healing hierarchy | [.agents/homepage/page-2/SKILL.md](.agents/homepage/page-2/SKILL.md) |
+| **Page 3** | The Five-Day Journey | Five elements header & clickable cards with itinerary sync | [.agents/homepage/page-3/SKILL.md](.agents/homepage/page-3/SKILL.md) |
 | **Page 4** | A slower way to travel within | Interactive 1-min breathing, intention picker, questions, daily pause | [.agents/homepage/page-4/SKILL.md](.agents/homepage/page-4/SKILL.md) |
 | **Page 5** | Ladakh Edition 2.0 | Featured retreat showcase, calendar date badge, pricing in paise | [.agents/homepage/page-5/SKILL.md](.agents/homepage/page-5/SKILL.md) |
 | **Page 6** | Rooted in medicine, Guided by nature | Founder profile, fireflies particle effect, guide bio & portrait | [.agents/homepage/page-6/SKILL.md](.agents/homepage/page-6/SKILL.md) |
