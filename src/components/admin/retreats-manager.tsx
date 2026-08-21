@@ -266,9 +266,10 @@ export function RetreatsManager() {
     setBusy(true);
     setError(null);
     try {
+      const slug = (draft.slug || slugify(draft.title) || "general").trim();
       const label = `${draft.title || "Bhraman retreat"} cover`;
       const asset = await uploadMediaForReview(file, {
-        folder: `retreats/${draft.slug || "general"}/cover`,
+        folder: `retreats/${slug}/cover`,
         altText: label,
         title: label,
       });
@@ -290,12 +291,13 @@ export function RetreatsManager() {
 
     const total = files.length;
     let completed = 0;
+    const slug = (managingMediaRetreat.slug || slugify(managingMediaRetreat.title) || "general").trim();
 
     for (let i = 0; i < total; i++) {
       const file = files[i];
       const isVideo = file.type.startsWith("video/");
       const kind = isVideo ? "videos" : "gallery";
-      const folder = `retreats/${managingMediaRetreat.slug}/${kind}`;
+      const folder = `retreats/${slug}/${kind}`;
       const defaultTitle = `${managingMediaRetreat.title} — ${uploadCategory} ${i + 1}`;
 
       setUploadProgress(`Uploading ${i + 1} of ${total}: ${file.name}…`);
@@ -318,19 +320,21 @@ export function RetreatsManager() {
             category: uploadCategory,
             caption: `${uploadCategory} moment from ${managingMediaRetreat.edition || managingMediaRetreat.title}`,
             displayOrder: retreatMediaList.length + completed + 1,
-            publicationStatus: "PUBLISHED",
           }),
         });
 
         completed++;
       } catch (err) {
         console.error("Upload error on file", file.name, err);
+        fail(err instanceof Error ? err.message : `Failed to upload ${file.name}`);
       }
     }
 
     setUploadProgress(null);
     setBusy(false);
-    flash(`Uploaded and linked ${completed} of ${total} media assets!`);
+    if (completed > 0) {
+      flash(`Uploaded and linked ${completed} of ${total} media assets!`);
+    }
     loadRetreatMedia(managingMediaRetreat.id);
   }
 
@@ -947,6 +951,9 @@ export function RetreatsManager() {
                             <img
                               src={asset.posterUrl || asset.url}
                               alt={asset.altText || "Video thumbnail"}
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = "/uploads/images/background/hero-himalayan-dawn.jpg";
+                              }}
                               style={{ width: "100%", height: "100%", objectFit: "cover" }}
                             />
                             <Film
@@ -965,6 +972,9 @@ export function RetreatsManager() {
                           <img
                             src={asset.url}
                             alt={asset.altText || "Retreat moment"}
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src = "/uploads/images/background/hero-himalayan-dawn.jpg";
+                            }}
                             style={{ width: "100%", height: "100%", objectFit: "cover" }}
                           />
                         )}

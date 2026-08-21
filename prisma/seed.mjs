@@ -60,7 +60,7 @@ const retreats = [
     highlight: "The mountains became our classroom, silence became our practice, and five days became a memory carried home.",
     storyTitle: "Five days in the mountains. A thousand small moments.",
     storyBody: "In September 2025, eighteen travellers gathered in the ancient valley of Lamayuru to experience the five elements in their purest Himalayan forms.\n\nFrom early morning Earth grounding amidst cold desert sands to evening Fire ceremonies under star-filled skies, each day allowed the nervous system to settle into silence and deep restoration.",
-    heroImageUrl: "/media/retreats/ladakh/hero.jpg",
+    heroImageUrl: "/uploads/images/background/hero-himalayan-dawn.jpg",
     publishedAt: new Date(),
   },
   {
@@ -273,7 +273,7 @@ async function main() {
     const memoryMedia = [
       {
         blobName: "retreats/ladakh-edition-1/cover/cover.jpg",
-        url: "/media/retreats/ladakh/hero.jpg",
+        url: "/uploads/images/background/hero-himalayan-dawn.jpg",
         altText: "Sham Valley and Lamayuru landscape in Ladakh",
         title: "Sham Valley, Ladakh",
         caption: "Our sacred sanctuary amidst the moonland valleys of Lamayuru.",
@@ -287,7 +287,7 @@ async function main() {
       },
       {
         blobName: "retreats/ladakh-edition-1/gallery/monastery-morning.jpg",
-        url: "/media/retreats/ladakh/monastery.jpg",
+        url: "/hero-yoga-lamayuru.jpg",
         altText: "Morning prayer and meditation at Lamayuru Monastery",
         title: "Morning Monastery Chants",
         caption: "Early morning chants echoing through the ancient prayer halls.",
@@ -300,7 +300,7 @@ async function main() {
       },
       {
         blobName: "retreats/ladakh-edition-1/gallery/yoga-practice.jpg",
-        url: "/media/founder/practice.jpg",
+        url: "/uploads/images/background/upcoming-retreats.jpg",
         altText: "Elemental grounding yoga and somatic alignment in Ladakh",
         title: "Earth Element Grounding",
         caption: "Conscious somatic flow and prāṇāyāma under the open Himalayan sky.",
@@ -313,7 +313,7 @@ async function main() {
       },
       {
         blobName: "retreats/ladakh-edition-1/gallery/community-circle.jpg",
-        url: "/media/retreats/ladakh/community.jpg",
+        url: "/uploads/images/background/testimonials.jpg",
         altText: "The 18 retreat participants gathering for tea and reflection",
         title: "Community Sharing Circle",
         caption: "Deep conversations and warm herbal chai as the sun sets over the peaks.",
@@ -326,7 +326,7 @@ async function main() {
       },
       {
         blobName: "retreats/ladakh-edition-1/gallery/ceremony-fire.jpg",
-        url: "/media/retreats/ladakh/hero.jpg",
+        url: "/uploads/images/background/rish-agarwal-8yq43rghlhm-unsplash.jpg",
         altText: "Evening Fire element ceremony under Himalayan stars",
         title: "Evening Fire Ritual",
         caption: "Releasing accumulated mental burdens into the sacred fire.",
@@ -340,7 +340,7 @@ async function main() {
       {
         blobName: "retreats/ladakh-edition-1/videos/retreat-film.mp4",
         url: "/media/videos/ladakh-edition-1.mp4",
-        posterUrl: "/media/retreats/ladakh/hero.jpg",
+        posterUrl: "/uploads/images/background/hero-himalayan-dawn.jpg",
         altText: "Ladakh Edition 1.0 — A Journey Lived (Short Film)",
         title: "Ladakh Edition 1.0 — A Journey Lived",
         caption: "Five elemental days of stillness, mountain wisdom and heartfelt community.",

@@ -51,7 +51,7 @@ test("accepts valid image, video and audio metadata", () => {
 });
 
 test("rejects unapproved paths and path traversal", () => {
-  for (const folder of ["retreats/unknown/gallery", "../private", "audio/chants/../../secrets"]) {
+  for (const folder of ["unapproved/private/gallery", "../private", "audio/chants/../../secrets", "retreats/../../secrets"]) {
     const result = validateMediaUploadRequest({
       folder,
       fileName: "image.jpg",

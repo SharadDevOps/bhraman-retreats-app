@@ -79,7 +79,13 @@ export function expectedKindForFolder(folder) {
 }
 
 export function isAllowedMediaFolder(folder) {
-  return typeof folder === "string" && FOLDER_SET.has(folder);
+  if (typeof folder !== "string") return false;
+  if (folder.includes("..") || folder.includes("\\") || folder.includes("\0")) return false;
+  if (FOLDER_SET.has(folder)) return true;
+  if (/^retreats\/[a-z0-9_-]+(?:\/(cover|gallery|videos|participants|monastery|thumbnails))?$/.test(folder.trim())) {
+    return true;
+  }
+  return false;
 }
 
 export function sanitizeMediaFileName(fileName) {
