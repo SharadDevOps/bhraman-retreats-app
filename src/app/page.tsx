@@ -18,6 +18,7 @@ import { PhilosophyParagraphs } from "@/components/philosophy-paragraphs";
 import { ExperienceBhraman } from "@/components/experiences/experience-bhraman";
 import { Itinerary, type ItineraryItem } from "@/components/itinerary";
 import { Fireflies } from "@/components/nature-effects";
+import { FounderStorySection } from "@/components/founder-story-section";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { formatDateRange, getHomepageData, type MediaContent } from "@/lib/content";
 
@@ -187,28 +188,14 @@ export default async function Home() {
         )}
       </section>
 
-      <section className="founder-section" id="founder">
-        <Fireflies />
-        <div className="founder-copy">
-          <Sparkles size={28} />
-          <SectionLabel className="light">{content.founderLabel}</SectionLabel>
-          <EditorialHeading>{content.founderTitle}<br /><em>{content.founderEmphasis}</em></EditorialHeading>
-          {founderQuote && <QuoteBlock attribution={founderQuote.attribution}>{founderQuote.text}</QuoteBlock>}
-          {founder ? (
-            <><p>{founder.name} · {founder.title}</p><SecondaryButton href="#enquiry" onDark showArrow>Begin your journey</SecondaryButton></>
-          ) : (
-            <ContentNotice label="Founder profile" />
-          )}
-        </div>
-        <div className="founder-image">
-          <ResponsiveMedia
-            src={founder?.imageUrl ?? founderMedia?.url ?? mediaSlots.founder}
-            alt={founderMedia?.altText ?? founder?.name ?? "Bhraman retreat guide"}
-            fallbackTitle={founder ? `Meet ${founder.name}` : "Meet your Bhraman guide"}
-            fallbackHint="Founder portrait is being prepared"
-          />
-        </div>
-      </section>
+      <FounderStorySection
+        content={content}
+        founder={founder}
+        founderQuote={founderQuote}
+        founderMedia={founderMedia}
+        mediaSlots={mediaSlots}
+        media={media}
+      />
 
       <section className="itinerary-section section" id="itinerary">
         <SectionContainer className="section-heading compact">

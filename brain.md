@@ -40,7 +40,7 @@ All domain intelligence and system operations are documented in modular agent sk
 | **Page 3** | The Five-Day Journey | Five elements header & clickable cards with itinerary sync | [.agents/homepage/page-3/SKILL.md](.agents/homepage/page-3/SKILL.md) |
 | **Page 4** | A slower way to travel within | Interactive 1-min breathing, intention picker, questions, daily pause | [.agents/homepage/page-4/SKILL.md](.agents/homepage/page-4/SKILL.md) |
 | **Page 5** | Ladakh Edition 2.0 | Featured retreat showcase, calendar date badge, pricing in paise | [.agents/homepage/page-5/SKILL.md](.agents/homepage/page-5/SKILL.md) |
-| **Page 6** | Rooted in medicine, Guided by nature | Founder profile, fireflies particle effect, guide bio & portrait | [.agents/homepage/page-6/SKILL.md](.agents/homepage/page-6/SKILL.md) |
+| **Page 6** | The Story Behind Bhraman | Founder section & full-screen editorial Founder Story experience | [.agents/homepage/page-6/SKILL.md](.agents/homepage/page-6/SKILL.md) |
 | **Page 7** | A journey that unfolds slowly | Five-day elemental itinerary tabs & practice rhythm | [.agents/homepage/page-7/SKILL.md](.agents/homepage/page-7/SKILL.md) |
 | **Page 8** | Moments carried home | Authentic memory photographs & previous edition gallery | [.agents/homepage/page-8/SKILL.md](.agents/homepage/page-8/SKILL.md) |
 | **Page 9** | What guests carry home | Guest reflections, testimonials card grid, video reflections | [.agents/homepage/page-9/SKILL.md](.agents/homepage/page-9/SKILL.md) |

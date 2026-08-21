@@ -87,6 +87,17 @@ export type FeaturedRetreat = {
 // Lightweight retreat shape (no itinerary) used for the upcoming-retreats list.
 export type RetreatSummary = Omit<FeaturedRetreat, "itinerary">;
 
+export type FounderStoryChapter = {
+  number: string;
+  label: string;
+  headlineTitle: string;
+  headlineEmphasis: string;
+  paragraphs: string[];
+  imageSlot: string;
+  imageAlt: string;
+  credentials?: Array<{ label: string; value: string }>;
+};
+
 export type FounderContent = {
   id: string;
   slug: string;
@@ -95,6 +106,7 @@ export type FounderContent = {
   bio: string;
   imageUrl?: string | null;
   credentials?: string | null;
+  chapters?: FounderStoryChapter[];
 };
 
 export type TestimonialContent = {
@@ -190,7 +202,7 @@ export const defaultHomeContent: HomeContent = {
   itineraryEmphasis: "unfolds slowly.",
   itineraryIntro: "Every day honours one element through movement, traditional practice, conscious nourishment and reflection.",
   itineraryNote: "The complete time-by-time schedule becomes available after your place is confirmed.",
-  founderLabel: "Meet your guide",
+  founderLabel: "THE STORY BEHIND BHRAMAN",
   founderTitle: "Rooted in medicine.",
   founderEmphasis: "Guided by nature.",
   memoriesLabel: "Previous retreat memories",
@@ -350,6 +362,62 @@ export async function getBlogPost(origin: string, slug: string): Promise<BlogDet
     return null;
   }
 }
+
+export const defaultFounderChapters: FounderStoryChapter[] = [
+  {
+    number: "01",
+    label: "THE BEGINNING",
+    headlineTitle: "Before Bhraman,",
+    headlineEmphasis: "there was a search for another way.",
+    paragraphs: [
+      "In medical practice, we are trained to treat the symptom, to measure what is broken, and to intervene when balance has already been lost. But through years of listening to patients, one truth became impossible to ignore: true healing does not begin in a clinic — it begins when the nervous system finally feels safe enough to rest.",
+      "That realization sparked a deeply personal search for a slower, more profound way of healing — one that reunites medical understanding with ancient wisdom, stillness, and the raw medicine of nature.",
+    ],
+    imageSlot: "founder/profile",
+    imageAlt: "Dr. Pratiksha Shekhawat — Founder of Bhraman Retreats",
+  },
+  {
+    number: "02",
+    label: "THE BELIEF",
+    headlineTitle: "Healing was never meant",
+    headlineEmphasis: "to happen away from nature.",
+    paragraphs: [
+      "The human body is an extension of the earth, water, fire, air, and space that form our world. When we detach ourselves from these elemental rhythms — breathing artificial air, rushing through screens, and suppressing natural cycles — the body's innate intelligence becomes clouded.",
+      "Elemental therapy is not an escape; it is a return. By grounding in the soil, flowing with breath, reigniting inner fire, expanding with prāṇāyāma, and resting in spacious silence, the nervous system recalibrates naturally.",
+    ],
+    imageSlot: "retreat/ladakh/hero",
+    imageAlt: "Himalayan landscape — Nature as the foundation of healing",
+  },
+  {
+    number: "03",
+    label: "THE PRACTICE",
+    headlineTitle: "Ancient wisdom.",
+    headlineEmphasis: "Practised with intention.",
+    paragraphs: [
+      "Every practice at Bhraman is grounded in medical safety and classical yogic lineage. There are no generic routines or superficial trends — only mindful, evidence-backed elemental immersion designed to create genuine restoration.",
+    ],
+    imageSlot: "founder/practice",
+    imageAlt: "Yogic and elemental therapeutic practice",
+    credentials: [
+      { label: "Background", value: "Medical & Therapeutic Practice" },
+      { label: "Focus", value: "Yoga & Elemental Therapy" },
+      { label: "Lineage", value: "Traditional Himalayan & Yogic Sciences" },
+      { label: "Approach", value: "Somatic, Mindful & Nature-guided" },
+    ],
+  },
+  {
+    number: "04",
+    label: "BHRAMAN",
+    headlineTitle: "And eventually,",
+    headlineEmphasis: "Bhraman became the answer.",
+    paragraphs: [
+      "Bhraman was born out of a desire to create intimate, unhurried sanctuaries in the high Himalayas — spaces where small circles of seekers could step out of daily noise and experience the profound medicine of the five elements.",
+      "From mindful walks in Ladakh to evening fire rituals under starlit Himalayan skies, each retreat is a living container for deep rest, heartfelt connection, and inner renewal.",
+    ],
+    imageSlot: "memories/ladakh/community",
+    imageAlt: "Bhraman Retreats community in the Himalayas",
+  },
+];
 
 export function formatDateRange(start: Date, end: Date) {
   const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();

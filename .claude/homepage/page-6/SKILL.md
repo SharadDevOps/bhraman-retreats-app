@@ -1,8 +1,8 @@
-# Page 6 — Rooted in Medicine, Guided by Nature (Founder & Guide) (Claude Skill Reference)
+# Page 6 — The Story Behind Bhraman (Founder & Guide) (Claude Skill Reference)
 
-> **Source of Truth**: [Rooted in medicine, Guided by nature Skill](../../../.agents/homepage/page-6/SKILL.md)
+> **Source of Truth**: [The Story Behind Bhraman Skill](../../../.agents/homepage/page-6/SKILL.md)
 
-Founder biography and guide introduction with subtle firefly particle animation.
+Founder introduction and full-screen editorial Founder Story overlay experience.
 
 Refer to the primary skill definition:
 - [Primary Section Documentation](../../../.agents/homepage/page-6/SKILL.md)

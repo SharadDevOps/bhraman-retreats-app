@@ -211,13 +211,19 @@ async function main() {
 
   await prisma.founderProfile.upsert({
     where: { slug: "founder" },
-    update: {},
+    update: {
+      name: "Dr. Pratiksha Shekhawat",
+      title: "Founder · Bhraman Retreats",
+      publicationStatus: "PUBLISHED",
+      publishedAt: new Date(),
+    },
     create: {
       slug: "founder",
       name: "Dr. Pratiksha Shekhawat",
-      title: "Doctor, yoga and elemental therapist",
-      bio: "<p>Founder profile copy and approved portrait are awaiting final client content.</p>",
-      publicationStatus: "DRAFT",
+      title: "Founder · Bhraman Retreats",
+      bio: "<p>Doctor, yoga and elemental therapist devoted to restorative Himalayan retreats.</p>",
+      publicationStatus: "PUBLISHED",
+      publishedAt: new Date(),
     },
   });
 
@@ -280,7 +286,7 @@ async function main() {
         itineraryEmphasis: "unfolds slowly.",
         itineraryIntro: "Every day honours one element through movement, traditional practice, conscious nourishment and reflection.",
         itineraryNote: "The complete time-by-time schedule becomes available in your retreat account after booking.",
-        founderLabel: "Meet your guide",
+        founderLabel: "THE STORY BEHIND BHRAMAN",
         founderTitle: "Rooted in medicine.",
         founderEmphasis: "Guided by nature.",
         testimonialsLabel: "Voices from the journey",
