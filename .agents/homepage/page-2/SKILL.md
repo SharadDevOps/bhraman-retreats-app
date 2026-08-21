@@ -5,7 +5,7 @@ Page 2 (`<section className="manifesto section" id="philosophy">`) presents the 
 
 ## 2. Key Components & Implementation
 - **Title**: `ELEMENTAL THERAPY` (uppercase, `clamp(52px, 6.2vw, 94px)`, `color: #e27c39`, `--font-display`).
-- **Tagline of Title**: `Healing through the 5 great elements` (rendered with `.manifesto-tagline`, `font-size: 0.5em`, `font-style: italic`, `color: #e27c39`).
+- **Tagline of Title**: `Healing through the 5 great elements` (rendered with `.manifesto-tagline`, `font-size: 0.3em`, `font-style: italic`, `color: #e27c39`).
 - **First Paragraph** (`font: 400 21px/1.7 var(--font-display)`, color: `var(--mud)`):
   > *"In the heart of the Himalayas, every sound of the forest, every breath of air, and every grain of soil whispers an ancient truth — that all life arises from the Panch Mahābhūta: Earth, Water, Fire, Air, and Space. These five elements are not just outside us — they are the very fabric of our being"*
 - **Second Paragraph** (Identical typography: `font: 400 21px/1.7 var(--font-display)`, color: `var(--mud)`):
@@ -20,4 +20,4 @@ Page 2 (`<section className="manifesto section" id="philosophy">`) presents the 
 
 ## 4. Typography & Styling Rules
 - Both paragraphs use identical sizing (`21px`), font family (`var(--font-display)`), and color (`var(--mud)` / `#756456`).
-- Section heading tagline is 50% size of the main title, italicized, and colored in brand accent fire `#e27c39`.
+- Section heading tagline is 30% size of the main title (`0.3em`), italicized, and colored in brand accent fire `#e27c39`.
