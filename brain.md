@@ -36,7 +36,7 @@ All domain intelligence and system operations are documented in modular agent sk
 | Page | Section Name | Description & Key Features | Section Skill |
 |---|---|---|---|
 | **Page 1** | Remember your natural rhythm | Cinematic hero sequence, ambient sound toggle, skip intro, scroll cue | [.agents/homepage/page-1/SKILL.md](.agents/homepage/page-1/SKILL.md) |
-| **Page 2** | Nature is not the backdrop, Nature is the medicine | Philosophy manifesto, left media slot (`manifesto-art`), expandable reflection | [.agents/homepage/page-2/SKILL.md](.agents/homepage/page-2/SKILL.md) |
+| **Page 2** | ELEMENTAL THERAPY | Philosophy manifesto & healing through the 5 great elements | [.agents/homepage/page-2/SKILL.md](.agents/homepage/page-2/SKILL.md) |
 | **Page 3** | Five pathways back to balance | Panch Mahābhūta five elements grid & practice details | [.agents/homepage/page-3/SKILL.md](.agents/homepage/page-3/SKILL.md) |
 | **Page 4** | A slower way to travel within | Interactive 1-min breathing, intention picker, questions, daily pause | [.agents/homepage/page-4/SKILL.md](.agents/homepage/page-4/SKILL.md) |
 | **Page 5** | Ladakh Edition 2.0 | Featured retreat showcase, calendar date badge, pricing in paise | [.agents/homepage/page-5/SKILL.md](.agents/homepage/page-5/SKILL.md) |

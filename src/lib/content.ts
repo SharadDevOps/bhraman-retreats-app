@@ -170,8 +170,8 @@ export const defaultHomeContent: HomeContent = {
   heroSecondaryCta: "Discover our philosophy",
   introTagline: "Breathe in · Return within",
   philosophyLabel: "The Bhraman way",
-  philosophyTitle: "Connect through the five great elements",
-  philosophyEmphasis: "(Panchmahabhutas)",
+  philosophyTitle: "ELEMENTAL THERAPY",
+  philosophyEmphasis: "Healing through the 5 great elements",
   philosophyParagraphs: [
     "In the heart of the Himalayas, every sound of the forest, every breath of air, and every grain of soil whispers an ancient truth — that all life arises from the Panch Mahābhūta: Earth, Water, Fire, Air, and Space. These five elements are not just outside us — they are the very fabric of our being",
     "When these elements are in balance, the body’s natural intelligence flourishes — digestion strengthens, sleep deepens, hormones align, and the nervous system returns to its natural rhythm of rest and renewal. Through elemental therapy, the senses awaken, pranic flow becomes unobstructed, and the mind begins to mirror the quiet order of nature itself. Each day of this retreat is devoted to one element — allowing you to experience its medicine through carefully curated practices, yogic techniques, and sensory experiences that bring harmony to body, mind, and spirit.",

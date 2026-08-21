@@ -84,7 +84,7 @@ export default async function Home() {
           <div><SectionLabel>{content.philosophyLabel}</SectionLabel><span className="botanical" aria-hidden="true">❦</span></div>
         )}
         <div>
-          <EditorialHeading>{content.philosophyTitle}<br /><em>{content.philosophyEmphasis}</em></EditorialHeading>
+          <EditorialHeading>{content.philosophyTitle}<br /><em className="manifesto-tagline">{content.philosophyEmphasis}</em></EditorialHeading>
           <PhilosophyParagraphs paragraphs={content.philosophyParagraphs} />
           <SecondaryButton href="#elements" showArrow>{content.philosophyCta}</SecondaryButton>
         </div>
