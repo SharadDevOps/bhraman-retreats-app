@@ -150,6 +150,7 @@ export function makeAdminWhere(
       "retreat-days": "retreatId",
       "itinerary-sections": "retreatDayId",
       "itinerary-activities": "itinerarySectionId",
+      "media-assets": "retreatId",
       enquiries: "retreatId",
     };
     if (parentFields[entity]) where[parentFields[entity]] = options.parentId;

@@ -1,8 +1,8 @@
-# Page 8 — Moments Carried Home (Retreat Memories Gallery) (Claude Skill Reference)
+# Page 8 — Previous Retreat Memories (Claude Skill Reference)
 
-> **Source of Truth**: [Moments carried home Skill](../../../.agents/homepage/page-8/SKILL.md)
+> **Source of Truth**: [Previous Retreat Memories Skill](../../../.agents/homepage/page-8/SKILL.md)
 
-Curated photo grid featuring memories from previous Himalayan editions and Lamayuru monastery.
+Dynamic editorial visual journal, past retreat selector, hero overview, storytelling narrative, media categories, lightbox modal, video memories, and Admin panel media management.
 
 Refer to the primary skill definition:
 - [Primary Section Documentation](../../../.agents/homepage/page-8/SKILL.md)

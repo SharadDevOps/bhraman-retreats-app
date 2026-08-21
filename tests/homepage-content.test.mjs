@@ -96,6 +96,7 @@ test("requests every required public endpoint and maps their responses", async (
     const responseByPath = {
       "/api/public/retreats/featured": retreat,
       "/api/public/retreats/upcoming": [],
+      "/api/public/retreats/completed": [],
       "/api/public/site-settings": { "home.content": { heroTitle: "API title" }, "home.elements": [] },
       "/api/public/founder": { id: "founder-1", slug: "founder", name: "Guide", title: "Founder", bio: "Bio" },
       "/api/public/testimonials": [],
@@ -114,6 +115,7 @@ test("requests every required public endpoint and maps their responses", async (
       "/api/public/founder",
       "/api/public/media",
       "/api/public/quotes",
+      "/api/public/retreats/completed",
       "/api/public/retreats/featured",
       "/api/public/retreats/upcoming",
       "/api/public/site-settings",

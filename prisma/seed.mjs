@@ -42,12 +42,35 @@ const itinerary = [
 
 const retreats = [
   {
+    slug: "ladakh-edition-1-sep-2025",
+    title: "Ladakh Elemental Retreat",
+    edition: "Ladakh Edition 1.0",
+    summary: "The inaugural five-day journey through the high-altitude silence, ancient monasteries, and elemental landscapes of Ladakh.",
+    description: "Our inaugural five-element journey through Ladakh brought together 18 mindful travellers for deep restoration.",
+    location: "Sham Valley, Ladakh",
+    venue: "Lamayuru Monastery",
+    startDate: new Date("2025-09-12T00:00:00.000Z"),
+    endDate: new Date("2025-09-16T00:00:00.000Z"),
+    priceInPaise: 2999900,
+    capacity: 18,
+    participantCount: 18,
+    status: "COMPLETED",
+    displayOrder: 1,
+    publicationStatus: "PUBLISHED",
+    highlight: "The mountains became our classroom, silence became our practice, and five days became a memory carried home.",
+    storyTitle: "Five days in the mountains. A thousand small moments.",
+    storyBody: "In September 2025, eighteen travellers gathered in the ancient valley of Lamayuru to experience the five elements in their purest Himalayan forms.\n\nFrom early morning Earth grounding amidst cold desert sands to evening Fire ceremonies under star-filled skies, each day allowed the nervous system to settle into silence and deep restoration.",
+    heroImageUrl: "/media/retreats/ladakh/hero.jpg",
+    publishedAt: new Date(),
+  },
+  {
     slug: "ladakh-edition-2-sep-2026",
     title: "Ladakh Edition 2.0",
     edition: "Edition 2.0",
     summary: "Five elemental days shaped by high-altitude stillness, monastery rhythms and the vast landscapes of Ladakh.",
     description: "A five-element Bhraman retreat through the silence, culture and mountain wisdom of Ladakh.",
     location: "Sham Valley, Ladakh",
+    venue: "Lamayuru Monastery",
     startDate: new Date("2026-09-12T00:00:00.000Z"),
     endDate: new Date("2026-09-16T00:00:00.000Z"),
     priceInPaise: 2999900,
@@ -64,6 +87,7 @@ const retreats = [
     summary: "Five restorative days of elemental practice, conscious nourishment and quiet immersion in the Himalayan foothills.",
     description: "An intimate five-element Bhraman retreat rooted in the natural rhythms of Uttarakhand.",
     location: "Uttarakhand, India",
+    venue: "Rishikesh Foothills Sanctuary",
     startDate: new Date("2026-12-25T00:00:00.000Z"),
     endDate: new Date("2026-12-29T00:00:00.000Z"),
     priceInPaise: 2999900,
@@ -240,6 +264,104 @@ async function main() {
       publishedAt: new Date(),
     },
   });
+
+  const pastRetreat = await prisma.retreat.findUnique({
+    where: { slug: "ladakh-edition-1-sep-2025" },
+  });
+
+  if (pastRetreat) {
+    const memoryMedia = [
+      {
+        blobName: "retreats/ladakh-edition-1/cover/cover.jpg",
+        url: "/media/retreats/ladakh/hero.jpg",
+        altText: "Sham Valley and Lamayuru landscape in Ladakh",
+        title: "Sham Valley, Ladakh",
+        caption: "Our sacred sanctuary amidst the moonland valleys of Lamayuru.",
+        category: "Nature",
+        kind: "IMAGE",
+        isCover: true,
+        displayOrder: 1,
+        retreatId: pastRetreat.id,
+        publicationStatus: "PUBLISHED",
+        mimeType: "image/jpeg",
+      },
+      {
+        blobName: "retreats/ladakh-edition-1/gallery/monastery-morning.jpg",
+        url: "/media/retreats/ladakh/monastery.jpg",
+        altText: "Morning prayer and meditation at Lamayuru Monastery",
+        title: "Morning Monastery Chants",
+        caption: "Early morning chants echoing through the ancient prayer halls.",
+        category: "Monastery",
+        kind: "IMAGE",
+        displayOrder: 2,
+        retreatId: pastRetreat.id,
+        publicationStatus: "PUBLISHED",
+        mimeType: "image/jpeg",
+      },
+      {
+        blobName: "retreats/ladakh-edition-1/gallery/yoga-practice.jpg",
+        url: "/media/founder/practice.jpg",
+        altText: "Elemental grounding yoga and somatic alignment in Ladakh",
+        title: "Earth Element Grounding",
+        caption: "Conscious somatic flow and prāṇāyāma under the open Himalayan sky.",
+        category: "Practice",
+        kind: "IMAGE",
+        displayOrder: 3,
+        retreatId: pastRetreat.id,
+        publicationStatus: "PUBLISHED",
+        mimeType: "image/jpeg",
+      },
+      {
+        blobName: "retreats/ladakh-edition-1/gallery/community-circle.jpg",
+        url: "/media/retreats/ladakh/community.jpg",
+        altText: "The 18 retreat participants gathering for tea and reflection",
+        title: "Community Sharing Circle",
+        caption: "Deep conversations and warm herbal chai as the sun sets over the peaks.",
+        category: "Community",
+        kind: "IMAGE",
+        displayOrder: 4,
+        retreatId: pastRetreat.id,
+        publicationStatus: "PUBLISHED",
+        mimeType: "image/jpeg",
+      },
+      {
+        blobName: "retreats/ladakh-edition-1/gallery/ceremony-fire.jpg",
+        url: "/media/retreats/ladakh/hero.jpg",
+        altText: "Evening Fire element ceremony under Himalayan stars",
+        title: "Evening Fire Ritual",
+        caption: "Releasing accumulated mental burdens into the sacred fire.",
+        category: "Ceremony",
+        kind: "IMAGE",
+        displayOrder: 5,
+        retreatId: pastRetreat.id,
+        publicationStatus: "PUBLISHED",
+        mimeType: "image/jpeg",
+      },
+      {
+        blobName: "retreats/ladakh-edition-1/videos/retreat-film.mp4",
+        url: "/media/videos/ladakh-edition-1.mp4",
+        posterUrl: "/media/retreats/ladakh/hero.jpg",
+        altText: "Ladakh Edition 1.0 — A Journey Lived (Short Film)",
+        title: "Ladakh Edition 1.0 — A Journey Lived",
+        caption: "Five elemental days of stillness, mountain wisdom and heartfelt community.",
+        category: "Ceremony",
+        kind: "VIDEO",
+        durationSeconds: 194,
+        displayOrder: 6,
+        retreatId: pastRetreat.id,
+        publicationStatus: "PUBLISHED",
+        mimeType: "video/mp4",
+      },
+    ];
+
+    for (const item of memoryMedia) {
+      await prisma.mediaAsset.upsert({
+        where: { blobName: item.blobName },
+        update: item,
+        create: item,
+      });
+    }
+  }
 
   await prisma.siteSetting.upsert({
     where: { key: "brand.identity" },

@@ -11,8 +11,8 @@ const richFields = new Set(["description", "content", "bio", "quote", "text", "m
 const schemas = {
   retreats: {
     required: ["slug", "title", "summary", "description", "location", "startDate", "endDate", "priceInPaise", "capacity"],
-    strings: ["slug", "title", "edition", "summary", "description", "location", "status", "publicationStatus", "heroImageUrl", "highlight"],
-    integers: ["priceInPaise", "capacity"],
+    strings: ["slug", "title", "edition", "summary", "description", "location", "venue", "status", "publicationStatus", "heroImageUrl", "highlight", "storyTitle", "storyBody", "coverMediaId"],
+    integers: ["priceInPaise", "capacity", "participantCount", "displayOrder"],
     dates: ["startDate", "endDate", "publishedAt"],
   },
   "retreat-days": {
@@ -54,8 +54,9 @@ const schemas = {
   },
   "media-assets": {
     required: [],
-    strings: ["title", "altText", "caption", "credit"],
-    integers: ["width", "height", "durationSeconds"],
+    strings: ["title", "altText", "caption", "credit", "retreatId", "category", "thumbnailUrl", "posterUrl"],
+    integers: ["width", "height", "durationSeconds", "displayOrder"],
+    booleans: ["isCover", "isFeatured"],
   },
   "site-settings": {
     required: ["key", "value"],
@@ -102,6 +103,7 @@ export function validateCmsEntity(entity, payload, options = {}) {
     ...(schema.integers ?? []),
     ...(schema.dates ?? []),
     ...(schema.json ?? []),
+    ...(schema.booleans ?? []),
   ]);
 
   if (!partial) {
@@ -141,6 +143,8 @@ export function validateCmsEntity(entity, payload, options = {}) {
         continue;
       }
       data[field] = rawValue;
+    } else if (schema.booleans?.includes(field)) {
+      data[field] = Boolean(rawValue);
     } else if (schema.dates?.includes(field)) {
       const date = new Date(rawValue);
       if (Number.isNaN(date.getTime())) {

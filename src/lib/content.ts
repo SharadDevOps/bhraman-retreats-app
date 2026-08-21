@@ -87,6 +87,51 @@ export type FeaturedRetreat = {
 // Lightweight retreat shape (no itinerary) used for the upcoming-retreats list.
 export type RetreatSummary = Omit<FeaturedRetreat, "itinerary">;
 
+export type RetreatMediaItem = {
+  id: string;
+  url: string;
+  kind: string;
+  folder: string;
+  title?: string | null;
+  altText: string;
+  caption?: string | null;
+  credit?: string | null;
+  category?: string | null;
+  displayOrder: number;
+  isCover: boolean;
+  isFeatured: boolean;
+  width?: number | null;
+  height?: number | null;
+  durationSeconds?: number | null;
+  posterUrl?: string | null;
+  thumbnailUrl?: string | null;
+};
+
+export type CompletedRetreat = {
+  id: string;
+  slug: string;
+  title: string;
+  edition?: string | null;
+  summary: string;
+  description: string;
+  location: string;
+  venue?: string | null;
+  startDate: string;
+  endDate: string;
+  priceInPaise: number;
+  capacity: number;
+  status: string;
+  heroImageUrl?: string | null;
+  highlight?: string | null;
+  storyTitle?: string | null;
+  storyBody?: string | null;
+  participantCount?: number | null;
+  displayOrder: number;
+  coverMediaId?: string | null;
+  publishedAt?: string | null;
+  media: RetreatMediaItem[];
+};
+
 export type FounderStoryChapter = {
   number: string;
   label: string;
@@ -164,6 +209,7 @@ export type HomepageData = {
   elements: ElementContent[];
   retreat: FeaturedRetreat | null;
   upcomingRetreats: RetreatSummary[];
+  completedRetreats: CompletedRetreat[];
   founder: FounderContent | null;
   testimonials: TestimonialContent[];
   blog: BlogContent | null;
@@ -261,6 +307,7 @@ function envelopeData<T>(result?: PromiseSettledResult<ApiEnvelope<T>>): T | nul
 export function mapHomepageResponses(results: {
   retreat: PromiseSettledResult<ApiEnvelope<FeaturedRetreat>>;
   upcoming: PromiseSettledResult<ApiEnvelope<RetreatSummary[]>>;
+  completed: PromiseSettledResult<ApiEnvelope<CompletedRetreat[]>>;
   settings: PromiseSettledResult<ApiEnvelope<SettingsPayload>>;
   founder: PromiseSettledResult<ApiEnvelope<FounderContent>>;
   testimonials: PromiseSettledResult<ApiEnvelope<TestimonialContent[]>>;
@@ -278,6 +325,7 @@ export function mapHomepageResponses(results: {
     elements: mapElements(settings["home.elements"]),
     retreat: envelopeData(results.retreat),
     upcomingRetreats: envelopeData(results.upcoming) ?? [],
+    completedRetreats: envelopeData(results.completed) ?? [],
     founder: envelopeData(results.founder),
     testimonials: (envelopeData(results.testimonials) ?? []).slice(0, 3),
     blog: (envelopeData(results.blogs) ?? [])[0] ?? null,
@@ -298,9 +346,10 @@ async function fetchApi<T>(origin: string, path: string): Promise<ApiEnvelope<T>
 }
 
 export async function getHomepageData(origin: string): Promise<HomepageData> {
-  const [retreat, upcoming, settings, founder, testimonials, blogs, quotes, media] = await Promise.allSettled([
+  const [retreat, upcoming, completed, settings, founder, testimonials, blogs, quotes, media] = await Promise.allSettled([
     fetchApi<FeaturedRetreat>(origin, "/api/public/retreats/featured"),
     fetchApi<RetreatSummary[]>(origin, "/api/public/retreats/upcoming"),
+    fetchApi<CompletedRetreat[]>(origin, "/api/public/retreats/completed"),
     fetchApi<SettingsPayload>(origin, "/api/public/site-settings"),
     fetchApi<FounderContent>(origin, "/api/public/founder"),
     fetchApi<TestimonialContent[]>(origin, "/api/public/testimonials?page=1&pageSize=3&sort=sortOrder&order=asc"),
@@ -308,7 +357,7 @@ export async function getHomepageData(origin: string): Promise<HomepageData> {
     fetchApi<QuoteContent[]>(origin, "/api/public/quotes?page=1&pageSize=6&sort=sortOrder&order=asc"),
     fetchApi<MediaContent[]>(origin, "/api/public/media?page=1&pageSize=100"),
   ]);
-  return mapHomepageResponses({ retreat, upcoming, settings, founder, testimonials, blogs, quotes, media });
+  return mapHomepageResponses({ retreat, upcoming, completed, settings, founder, testimonials, blogs, quotes, media });
 }
 
 export async function getUpcomingRetreats(origin: string): Promise<RetreatSummary[]> {

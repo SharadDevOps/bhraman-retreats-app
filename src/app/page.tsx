@@ -19,6 +19,7 @@ import { ExperienceBhraman } from "@/components/experiences/experience-bhraman";
 import { Itinerary, type ItineraryItem } from "@/components/itinerary";
 import { Fireflies } from "@/components/nature-effects";
 import { FounderStorySection } from "@/components/founder-story-section";
+import { RetreatMemories } from "@/components/retreat-memories";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { formatDateRange, getHomepageData, type MediaContent } from "@/lib/content";
 
@@ -37,7 +38,7 @@ export default async function Home() {
   const host = incomingHeaders.get("x-forwarded-host") ?? incomingHeaders.get("host") ?? "localhost:3000";
   const protocol = incomingHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const data = await getHomepageData(`${protocol}://${host}`);
-  const { content, retreat, upcomingRetreats, founder, elements, testimonials, blog, quotes, media, mediaSlots, unavailable } = data;
+  const { content, retreat, upcomingRetreats, completedRetreats, founder, elements, testimonials, blog, quotes, media, mediaSlots, unavailable } = data;
 
   // The soonest upcoming retreat is featured large above; show up to two more as cards.
   const moreRetreats = upcomingRetreats.filter((item) => item.slug !== retreat?.slug).slice(0, 2);
@@ -205,19 +206,11 @@ export default async function Home() {
         {itinerary.length > 0 ? <Itinerary items={itinerary} scheduleNote={content.itineraryNote} /> : <SectionContainer className="empty-content"><p>The detailed five-day rhythm will appear when the featured retreat itinerary is published.</p></SectionContainer>}
       </section>
 
-      <section className="memories-section section" id="memories">
-        <SectionContainer className="section-heading compact">
-          <div><SectionLabel>{content.memoriesLabel}</SectionLabel><EditorialHeading>{content.memoriesTitle}</EditorialHeading></div>
-          <p>{content.memoriesCopy}</p>
-        </SectionContainer>
-        {memoryMedia.length > 0 ? (
-          <SectionContainer className="memory-grid">
-            {memoryMedia.map((asset) => <ResponsiveMedia key={asset.id} src={asset.url} alt={asset.altText} fallbackTitle={asset.title ?? "Retreat memory"} />)}
-          </SectionContainer>
-        ) : (
-          <SectionContainer className="empty-content"><p>Previous retreat memories will be shared here after media review.</p></SectionContainer>
-        )}
-      </section>
+      <RetreatMemories
+        content={content}
+        completedRetreats={completedRetreats}
+        quotes={quotes}
+      />
 
       <section className="testimonials-section section" id="testimonials">
         <SectionContainer className="section-heading compact">

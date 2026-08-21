@@ -28,22 +28,30 @@ model Retreat {
   summary           String
   description       String
   location          String
+  venue             String?
   startDate         DateTime
   endDate           DateTime
   priceInPaise      Int
   capacity          Int
   status            String       @default("UPCOMING")
   heroImageUrl      String?
+  highlight         String?
+  storyTitle        String?
+  storyBody         String?
+  participantCount  Int?
+  displayOrder      Int          @default(0)
+  coverMediaId      String?
+  publicationStatus String       @default("DRAFT")
+  publishedAt       DateTime?
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
-  publicationStatus String       @default("DRAFT")
-  highlight         String?
-  publishedAt       DateTime?
   bookings          Booking[]
   enquiries         Enquiry[]
   itinerary         RetreatDay[]
+  media             MediaAsset[]
 
   @@index([publicationStatus, status, startDate])
+  @@index([status, publicationStatus, displayOrder])
 }
 
 model RetreatDay {
@@ -127,12 +135,17 @@ model MediaAsset {
   mimeType          String
   width             Int?
   height            Int?
-  createdAt         DateTime  @default(now())
   title             String?
   caption           String?
   credit            String?
+  category          String?
+  retreatId         String?
+  displayOrder      Int       @default(0)
+  isCover           Boolean   @default(false)
+  isFeatured        Boolean   @default(false)
+  thumbnailUrl      String?
+  posterUrl         String?
   publicationStatus String    @default("DRAFT")
-  updatedAt         DateTime  @updatedAt
   kind              String    @default("IMAGE")
   folder            String    @default("legacy")
   originalFileName  String?
@@ -142,9 +155,13 @@ model MediaAsset {
   etag              String?
   uploadedAt        DateTime?
   publishedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  retreat           Retreat?  @relation(fields: [retreatId], references: [id], onDelete: SetNull)
 
   @@index([publicationStatus, folder, createdAt])
   @@index([uploadStatus, createdAt])
+  @@index([retreatId, publicationStatus, displayOrder])
 }
 
 model Testimonial {
