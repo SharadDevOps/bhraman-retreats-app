@@ -536,10 +536,10 @@ body { padding-top: 0; }
 }
 .philosophy-extended-inner p,
 .manifesto > div:last-child > p + p {
-  max-width: 660px;
-  margin: 20px 0 0;
-  color: var(--text-muted);
-  font: 300 15px/1.9 var(--font-sans);
+  max-width: 800px;
+  margin: 24px 0 38px;
+  color: var(--mud);
+  font: 400 21px/1.7 var(--font-display);
 }
 .botanical { display: block; margin-top: 84px; color: var(--air); font: 126px var(--font-display); opacity: .32; }
 .manifesto-art {

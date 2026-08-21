@@ -149,5 +149,22 @@ export async function PUT(request: Request) {
     });
   }
 
+  if (body.homeContent || body.philosophyParagraphs || body.philosophyTitle || body.philosophyEmphasis) {
+    const existing = await prisma.siteSetting.findUnique({ where: { key: "home.content" } });
+    const currentVal = existing && typeof existing.value === "object" && existing.value !== null ? (existing.value as Record<string, unknown>) : {};
+    const updatedVal = {
+      ...currentVal,
+      ...(body.homeContent && typeof body.homeContent === "object" ? body.homeContent : {}),
+      ...(body.philosophyTitle ? { philosophyTitle: String(body.philosophyTitle).trim() } : {}),
+      ...(body.philosophyEmphasis ? { philosophyEmphasis: String(body.philosophyEmphasis).trim() } : {}),
+      ...(Array.isArray(body.philosophyParagraphs) ? { philosophyParagraphs: body.philosophyParagraphs.map((p: unknown) => String(p).trim()).filter(Boolean) } : {}),
+    };
+    await prisma.siteSetting.upsert({
+      where: { key: "home.content" },
+      update: { value: updatedVal, publicationStatus: "PUBLISHED", publishedAt: new Date() },
+      create: { key: "home.content", value: updatedVal, publicationStatus: "PUBLISHED", publishedAt: new Date() },
+    });
+  }
+
   return NextResponse.json(await readContent());
 }
