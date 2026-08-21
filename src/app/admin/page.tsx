@@ -6,6 +6,7 @@ import { Loader2, LogOut, Plus, Trash2, Upload, Youtube } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { publishMediaAsset, uploadMediaForReview } from "@/lib/media-upload-client";
 import { RetreatsManager } from "@/components/admin/retreats-manager";
+import { FounderStoryManager } from "@/components/admin/founder-story-manager";
 
 type Testimonial = { name: string; location: string; imageUrl: string; quote: string };
 type Video = { title: string; url: string };
@@ -21,7 +22,7 @@ type Booking = {
   createdAt: string; user: { name: string | null; email: string; phone: string | null };
 };
 
-const TABS = ["Content", "Retreats", "Testimonials", "Videos", "Images", "Bookings"] as const;
+const TABS = ["Content", "Retreats", "Founder Story", "Testimonials", "Videos", "Images", "Bookings"] as const;
 const inr = (paise: number) => `₹${(paise / 100).toLocaleString("en-IN")}`;
 
 function youtubeEmbedUrl(url: string): string {
@@ -414,6 +415,7 @@ export default function AdminPage() {
       )}
 
       {tab === "Retreats" && <RetreatsManager />}
+      {tab === "Founder Story" && <FounderStoryManager />}
 
       {/* ── TESTIMONIALS TAB ── */}
       {tab === "Testimonials" && (

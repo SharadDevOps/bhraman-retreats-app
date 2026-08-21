@@ -96,16 +96,19 @@ export function FounderStoryOverlay({
 
   // Helper to resolve chapter images
   const getChapterImage = (chapter: FounderStoryChapter, index: number) => {
+    if (chapter.imageSlot && (chapter.imageSlot.startsWith("/") || chapter.imageSlot.startsWith("http"))) {
+      return chapter.imageSlot;
+    }
     if (index === 0 && founder?.imageUrl) {
       return founder.imageUrl;
     }
     const found = media.find((m) => m.folder === chapter.imageSlot || m.url.includes(chapter.imageSlot));
     if (found?.url) return found.url;
     if (mediaSlots[chapter.imageSlot]) return mediaSlots[chapter.imageSlot];
-    if (index === 0) return mediaSlots.founder || "/media/founder/portrait.jpg";
-    if (index === 1) return mediaSlots["retreat/ladakh/hero"] || "/media/retreats/ladakh/hero.jpg";
-    if (index === 2) return mediaSlots["founder/practice"] || "/media/founder/practice.jpg";
-    return mediaSlots["memories/ladakh/community"] || "/media/retreats/ladakh/community.jpg";
+    if (index === 0) return mediaSlots.founder || founder?.imageUrl || "/hero-yoga-lamayuru.jpg";
+    if (index === 1) return mediaSlots["retreat/ladakh/hero"] || "/uploads/images/background/hero-himalayan-dawn.jpg";
+    if (index === 2) return mediaSlots["founder/practice"] || "/uploads/images/background/upcoming-retreats.jpg";
+    return mediaSlots["memories/ladakh/community"] || "/uploads/images/background/testimonials.jpg";
   };
 
   return (

@@ -1,15 +1,20 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { isAdmin } from "@/lib/admin-auth";
 import { retreatCatalog, selectFeaturedRetreat } from "@/data/retreat";
 
+import { defaultFounderChapters } from "@/lib/content";
+
 async function readContent() {
-  const [retreatRows, testimonials, mediaRow, videosRow, homeContentRow] = await Promise.all([
+  const [retreatRows, testimonials, mediaRow, videosRow, homeContentRow, founderProfile, founderStoryRow] = await Promise.all([
     prisma.retreat.findMany({ where: { slug: { in: retreatCatalog.map((retreat) => retreat.slug) } } }),
     prisma.testimonial.findMany({ orderBy: { sortOrder: "asc" } }),
     prisma.siteSetting.findUnique({ where: { key: "media.slots" } }),
     prisma.siteSetting.findUnique({ where: { key: "testimonials.videos" } }),
     prisma.siteSetting.findUnique({ where: { key: "home.content" } }),
+    prisma.founderProfile.findFirst({ where: { slug: "founder" } }),
+    prisma.siteSetting.findUnique({ where: { key: "founder.story" } }),
   ]);
   const retreats = retreatCatalog.map((definition) => {
     const stored = retreatRows.find((row) => row.slug === definition.slug);
@@ -39,12 +44,31 @@ async function readContent() {
         "When these elements are in balance, the body's natural intelligence flourishes — digestion strengthens, sleep deepens, hormones align, and the nervous system returns to its natural rhythm of rest and renewal. Through elemental therapy, the senses awaken, pranic flow becomes unobstructed, and the mind begins to mirror the quiet order of nature itself.",
         "Each day of this retreat is devoted to one element — allowing you to experience its medicine through carefully curated practices, yogic techniques, and sensory experiences that bring harmony to body, mind, and spirit.",
       ];
+  
+  const founderStoryVal = founderStoryRow?.value && typeof founderStoryRow.value === "object" && !Array.isArray(founderStoryRow.value)
+    ? founderStoryRow.value as Record<string, unknown>
+    : {};
+
+  const founderStory = {
+    name: founderProfile?.name ?? "Dr. Pratiksha Shekhawat",
+    title: founderProfile?.title ?? "Founder · Bhraman Retreats",
+    subtitle: (founderStoryVal.subtitle as string) ?? "Rooted in medicine. Guided by nature.",
+    bio: founderProfile?.bio ?? "Doctor, yoga and elemental therapist devoted to restorative Himalayan retreats.",
+    quote: (founderStoryVal.quote as string) ?? "Nature holds everything we need to heal. We only have to learn how to listen again.",
+    quoteAttribution: (founderStoryVal.quoteAttribution as string) ?? "Dr. Pratiksha Shekhawat",
+    imageUrl: founderProfile?.imageUrl ?? "/hero-yoga-lamayuru.jpg",
+    chapters: Array.isArray(founderStoryVal.chapters) && founderStoryVal.chapters.length > 0
+      ? founderStoryVal.chapters
+      : defaultFounderChapters,
+  };
+
   return {
     retreat: selectFeaturedRetreat(retreats),
     testimonials,
     media: mediaRow && typeof mediaRow.value === "object" ? mediaRow.value : {},
     videos: Array.isArray(videosRow?.value) ? videosRow.value : [],
     philosophyParagraphs,
+    founderStory,
   };
 }
 
@@ -149,20 +173,52 @@ export async function PUT(request: Request) {
     });
   }
 
-  if (body.homeContent || body.philosophyParagraphs || body.philosophyTitle || body.philosophyEmphasis) {
-    const existing = await prisma.siteSetting.findUnique({ where: { key: "home.content" } });
-    const currentVal = existing && typeof existing.value === "object" && existing.value !== null ? (existing.value as Record<string, unknown>) : {};
-    const updatedVal = {
-      ...currentVal,
-      ...(body.homeContent && typeof body.homeContent === "object" ? body.homeContent : {}),
-      ...(body.philosophyTitle ? { philosophyTitle: String(body.philosophyTitle).trim() } : {}),
-      ...(body.philosophyEmphasis ? { philosophyEmphasis: String(body.philosophyEmphasis).trim() } : {}),
-      ...(Array.isArray(body.philosophyParagraphs) ? { philosophyParagraphs: body.philosophyParagraphs.map((p: unknown) => String(p).trim()).filter(Boolean) } : {}),
-    };
+  if (body.founderStory && typeof body.founderStory === "object") {
+    const fs = body.founderStory as Record<string, unknown>;
+    const name = String(fs.name || "Dr. Pratiksha Shekhawat").trim();
+    const title = String(fs.title || "Founder · Bhraman Retreats").trim();
+    const bio = String(fs.bio || "").trim();
+    const imageUrl = fs.imageUrl && typeof fs.imageUrl === "string" ? fs.imageUrl.trim() : null;
+    const credentials = typeof fs.credentials === "string" ? fs.credentials : JSON.stringify(fs.credentials ?? []);
+
+    await prisma.founderProfile.upsert({
+      where: { slug: "founder" },
+      update: {
+        name,
+        title,
+        bio,
+        imageUrl,
+        credentials,
+        publicationStatus: "PUBLISHED",
+        publishedAt: new Date(),
+      },
+      create: {
+        slug: "founder",
+        name,
+        title,
+        bio,
+        imageUrl,
+        credentials,
+        publicationStatus: "PUBLISHED",
+        publishedAt: new Date(),
+      },
+    });
+
+    const jsonVal = fs as unknown as Prisma.InputJsonValue;
+
     await prisma.siteSetting.upsert({
-      where: { key: "home.content" },
-      update: { value: updatedVal, publicationStatus: "PUBLISHED", publishedAt: new Date() },
-      create: { key: "home.content", value: updatedVal, publicationStatus: "PUBLISHED", publishedAt: new Date() },
+      where: { key: "founder.story" },
+      update: {
+        value: jsonVal,
+        publicationStatus: "PUBLISHED",
+        publishedAt: new Date(),
+      },
+      create: {
+        key: "founder.story",
+        value: jsonVal,
+        publicationStatus: "PUBLISHED",
+        publishedAt: new Date(),
+      },
     });
   }
 

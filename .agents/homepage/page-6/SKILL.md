@@ -27,8 +27,17 @@ Page 6 (`<section className="founder-section" id="founder">`) presents the found
   - Secondary CTA: `← Return to the journey` (closes overlay and restores exact scroll position).
 - **Mobile Responsive**: Sequential chapter layout (`Image → Label → Headline → Body`) with natural touch scrolling and persistent close navigation.
 
-## 4. Data & CMS Fields (`home.content` & `FounderProfile`)
+## 4. Data & CMS Fields (`home.content`, `FounderProfile`, & `founder.story`)
 - `founderLabel`: "THE STORY BEHIND BHRAMAN"
 - `founderTitle`: "Rooted in medicine."
 - `founderEmphasis`: "Guided by nature."
-- API: `/api/public/founder` returning `name`, `title`, `bio`, `imageUrl`, `credentials`.
+- API: `/api/public/founder` returning `name`, `title`, `subtitle`, `bio`, `imageUrl`, `quote`, `quoteAttribution`, `credentials`, `chapters`.
+
+## 5. Admin Panel Management (`Founder Story` Tab)
+- Dedicated Admin tab (`<FounderStoryManager />`) under `/admin` (`TABS: "Founder Story"`).
+- Enables full editing of:
+  - Founder name, professional title, subtitle, bio, and main portrait image upload.
+  - Prominent quote and quote attribution.
+  - All 4 narrative chapters (Chapter label, headline title, headline italic emphasis, paragraphs, chapter image uploads to `founder/journey`, alt text).
+  - Medical & yogic credentials matrix (label/value pairs).
+- Live preview and auto-publishing to Azure Blob and PostgreSQL database.
